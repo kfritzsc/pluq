@@ -302,6 +302,9 @@ def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
     rows = [x.list for x in assignment_lines]
     columns = zip(*rows)
 
+    if not columns:
+        return None
+
     for k in xrange(n+1, n*2+1+1):
         scores = np.array(columns[k])
 
@@ -377,6 +380,9 @@ if __name__ == "__main__":
     n = len(cs_set)
     table = main(cs_set, exp_name, seq=seq)
     # Pretty Printing
+    print('input: {}'.format(', '.join(map(str, cs_set))))
+    print( 'experiment: {}'.format(exp_name))
+
     if table is None:
         print('No chemical shifts were found!')
     else:
@@ -387,8 +393,6 @@ if __name__ == "__main__":
         col_widths = [max(map(len, map(str, x))) for x in cols]
         fmt = '  '.join(['{{:<{}}}'.format(width) for width in col_widths])
 
-        print('input: {}'.format(', '.join(map(str, cs_set))))
-        print( 'experiment: {}'.format(exp_name))
         for line in table:
 
             if line[-4] <= cut_off:
