@@ -17,23 +17,24 @@ default it weight .
 
 Current Available Experiments:
 ----------------------------
-2D Carbon 1-bond cc1
-2D Carbon 2-bond cc2
-1D Carbon
-1D Nitrogen
-1D Proton
+2D Carbon 1-bond: cc
+2D Carbon-nitrogen 1-bond: cn
+1D Carbon: c
+1D Nitrogen: n
+1D Proton: h
 
-It is pretty easy to add new experiments but you will need the full version
-of the PACSY database. See 'utility/build_exp_pdf.py' for example.
+It is pretty easy to add new experiments but you will need the full version of
+the PACSY database. See 'utility/build_exp_pdf.py' for example.
 
-Warning
+Warning:
 -----------------------
 No Database Chemical Shifts for: Trp-(CD2)-All, Trp-(CG)-All Glu-(HE2)-All,
 Asp-(HD2)-All, Lys-(HZ1)-All, Pro-(H2)-All, Pro-(H3)-All, Tyr-(HH)-All,
 Asp-(CB,CG)-Sheet, Asp-(CG,CB)-Sheet, His-(CG,CB)-Coil, Trp-(CZ2,CE2)-All,
 Trp-(CD2,CE3)-All, Trp-(CB,CG)-Helix, Trp-(CB,CG)-Coil, Trp-(CG,CB)-Helix,
 Trp-(CG,CB)-Coil, Trp-(CE3,CD2)-All, Trp-(CE2,CZ2)-All, Tyr-(CB,CG)-Coil
-Tyr-(CG,CB)-Coil
+Tyr-(CG,CB)-Coil, Lys-(CE,NZ)-All, Pro-(CA,N)-Coil, Pro-(CD,N)-Helix
+Pro-(CD,N)-Sheet, Thr-(CA,N)-Helix
 
 References:
 ----------
@@ -50,7 +51,6 @@ Please kindly cite the two references if use of this code leads to publication.
 
 Keith J. Fritzsching
 """
-# TODO: Set up an argparse interface for this script.
 
 import collections
 from collections import namedtuple
@@ -60,7 +60,6 @@ from pluq.base import Correlation
 import pluq.base as base
 import pluq.inbase as inbase
 from shapely.geometry import Point
-
 
 Assignment = namedtuple('Assignment', ['res', 'atoms', 'scores', 'ss_scores'],
                         verbose=False)
@@ -130,7 +129,8 @@ def get_resonance_choices_1d(resonance, correlations, exp_name, level=95):
     try:
         ind = levels.index(level)
     except ValueError:
-        raise ValueError('You must chose a confidence level from {}'.format(levels))
+        mesg = 'You must chose a confidence level from {}'.format(levels)
+        raise ValueError(mesg)
 
     # Find all the hits
     assignments = collections.defaultdict(list)
@@ -236,20 +236,21 @@ def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
         raise ValueError('{} is not a known experiment'.format(exp_name))
 
     protein = base.ProteinSeq(seq)
-    corrs = protein.relevant_correlations(exp, structure=False, ignoresymmetry=True, offdiagonal=False)
+    correlations = protein.relevant_correlations(
+        exp, structure=False, ignoresymmetry=True, offdiagonal=False)
 
     n = len(cs_set)
     assignment_sets = []
     if exp.dims == 1:
         for cs in cs_set:
             resonance_choices = get_resonance_choices_1d(
-                cs, corrs, exp_name, level)
+                cs, correlations, exp_name, level)
             assignment_sets.append(resonance_choices)
 
     else:
         for cs in cs_set:
             resonance_choices = get_resonance_choices_2d(
-                cs, corrs, exp_name, level)
+                cs, correlations, exp_name, level)
             assignment_sets.append(resonance_choices)
 
 
@@ -326,14 +327,12 @@ def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
     rows = sorted(rows,
                   key=lambda x: tuple([x[-4]] + [y for y in x[n+1:n*2+1]]),
                   reverse=True)
-
     return rows
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-
     parser.add_argument(
         "-p", "--peak", action='append',
         type=float,
@@ -343,20 +342,20 @@ if __name__ == "__main__":
 
     parser.add_argument("-e", "--exp_name",
         default='c',
-        choices=['c', 'h', 'n', 'cc'],
-        help="Experiments available: c, n, h, cc")
+        choices=['c', 'h', 'n', 'cc', 'cn'],
+        help="Experiments available: c, n, h, cc, cn")
 
     parser.add_argument("-c", "--cut_off",
         action="store",
         type=float,
         default=-1,
-        help="Cut off %% value, negative number will show all.")
+        help="Cut off %% value, input a negative number for everything.")
 
     parser.add_argument("-s", "--seq",
         action="store",
         type=str,
         default='',
-        help="Protein sequence 1-letter amino-acid codes.")
+        help="Protein sequence in 1-letter amino-acid code.")
 
     parser_dict = vars(parser.parse_args())
 
@@ -371,7 +370,7 @@ if __name__ == "__main__":
 
         peak_dims = len(cs_set[0])
     else:
-        peak_dims =1
+        peak_dims = 1
 
     if exp.dims != peak_dims:
         raise ValueError(
@@ -381,7 +380,7 @@ if __name__ == "__main__":
     table = main(cs_set, exp_name, seq=seq)
     # Pretty Printing
     print('input: {}'.format(', '.join(map(str, cs_set))))
-    print( 'experiment: {}'.format(exp_name))
+    print('experiment: {}'.format(exp_name))
 
     if table is None:
         print('No chemical shifts were found!')

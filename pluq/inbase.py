@@ -289,12 +289,13 @@ def under_sample_data(data, sampled_fraction):
 
 
 pdffile_exptype = {'cc': 'cc_pdf_all.h5',
+                   'cn': 'cn_pdf_all.h5',
                    'c': 'c_pdf_all.h5',
                    'n': 'n_pdf_all.h5',
                    'h': 'h_pdf_all.h5'}
 
 standard_experiments = {'cc': CSExperiment(('C', 'C'), bonds=1),
-                        'cc2': CSExperiment(('C', 'C'), bonds=2),
+                        'cn': CSExperiment(('C', 'N'), bonds=1),
                         'c': CSExperiment(('C', )),
                         'n': CSExperiment(('N', )),
                         'h': CSExperiment(('H', ))}
@@ -402,7 +403,8 @@ schema = {'geometry': 'Polygon',
           'properties': {'corr': 'str',
                          'levels': 'float', }}
 
-shapefile_exptype = {'cc': os.path.join('cc_region_all', 'cc_region_all.shp')}
+shapefile_exptype = {'cc': os.path.join('cc_region_all', 'cc_region_all.shp'),
+                     'cn': os.path.join('cn_region_all', 'cn_region_all.shp')}
 
 
 def counterpart(region_shape):
