@@ -1,0 +1,18 @@
+# Compiled python modules.
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+*.pyc
+
+pluq/data/pdf/*
+pluq/data/regions/*
+
+# Setuptools distribution folder.
+dist/
+build/
+
+# Old Files
+keiths
+*scratch*
+
+# Pycham folder
+/.idea

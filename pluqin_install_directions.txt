@@ -1,0 +1,28 @@
+# Step 0
+# If you have python installed go to Step 1.
+# It is a bad idea to use your default system python.
+# Step 0: On a Mac install python 2.7 from homebrew.
+# If not on a Mac: take a look at: http://docs.python-guide.org/en/latest/
+
+bash
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew install python 
+
+# Step 1: Make a virtualenv
+# It is highly suggested that you work in a virtual environment.
+pip2.7 install virtualenv
+# cd to directory where pluq is:
+mkdir pluq_env
+mv pluq pluq_env/pluq
+cd pluq_env
+virtualenv env
+bash
+source env/bin/activate
+
+# Step 2:
+# Use the included install script.
+cd pluq
+pip install -r requirements.txt
+python setup.py install
+
+
