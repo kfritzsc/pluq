@@ -251,6 +251,7 @@ class Experiment(object):
 
 class CSExperiment(Experiment):
     """
+
     Chemical shift experiment definition. Also acts a container for resonances.
     """
     def __init__(self, nuclei, bonds=None, distance=None, *args, **kwargs):
