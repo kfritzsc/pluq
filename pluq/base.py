@@ -13,6 +13,10 @@ class Correlation(object):
     Container class validates inputs and groups information together
     to define complete assignable intra-residue correlation with secondary-
     structure information.
+
+    :param aa: 1 letter str, 1 of the 20 canonical amino-acids
+    :param atoms: valid bmrb atom names in an iterable, example  ('CA', )
+    :param ss: secondary-structure name from STRIDE  or none
     """
 
     def __init__(self, aa, atoms, ss='X'):
@@ -77,9 +81,12 @@ class ProteinID(object):
     """
     Container class validates inputs and groups `id` and `id type` together to
     define a protein in the PACSY database.
+
+    :param id_value: int or str
+    :param idtype: str in {'ID', 'KEY_ID', 'PDB_ID', 'BMRB_ID'}
     """
-    def __init__(self, idvalue, idtype):
-        self.id = idvalue
+    def __init__(self, id_value, idtype):
+        self.id = id_value
         self.idtype = idtype
 
     @property
@@ -100,6 +107,9 @@ class ProteinID(object):
 class ProteinSeq(object):
     """
     Protein Sequence Class.
+
+    :param sequence: iterable of 1-letter amino acid code str. If False,
+        default to the 20 amino acids in alphabetical order.
     """
     def __init__(self, sequence):
         """
@@ -152,10 +162,11 @@ class ProteinSeq(object):
         the required instance of CSExperiment.
 
         :param cs_exp: Instance of CSExperiment.
-        :param structure: bool, If True common second-structures are included
-        in correlations for C, CA, CB, N, HN and HA.
-
-
+        :param structure: bool, if True common second-structures are included
+            in correlations for C, CA, CB, N, HN and HA.
+        :param ignoresymmetry: bool, if True gives all correlation
+        :param offdiagonal: bool, if True keeps Correlation with between the
+            same atom.
         :return: [correlation, ...]
         """
         assert isinstance(cs_exp, CSExperiment)
@@ -215,6 +226,10 @@ class Experiment(object):
     Base class for defining NMR experiment(s). nuclei, symmetric and diagonal
     are the only experimental attributes defined, any other attributes/
     methods should be defined in derived classes.
+
+    :param nuclei: tuple of str, example ('C', 'N') for carbon-nitrogen exp.
+    :param symmetric: bool, True if spectrum is symmetric
+    :param diagonal: bool, True if the experiment have a diagonal
     """
     def __init__(self, nuclei, symmetric=False, diagonal=False):
         assert isinstance(nuclei, tuple)
@@ -251,18 +266,19 @@ class Experiment(object):
 
 class CSExperiment(Experiment):
     """
+    Chemical shift experiment definition.
 
-    Chemical shift experiment definition. Also acts a container for resonances.
+    :param bonds: int
+
     """
-    def __init__(self, nuclei, bonds=None, distance=None, *args, **kwargs):
+    def __init__(self, nuclei, bonds=None, *args, **kwargs):
         super(CSExperiment, self).__init__(nuclei, *args, **kwargs)
         self.bonds = bonds
-        self.distance = distance
         self.data = []
 
     def __repr__(self):
-        return 'Experiment({}, bonds={}, distance={})'.format(
-            self.nuclei, self.bonds, self.distance)
+        return 'Experiment({}, bonds={})'.format(
+            self.nuclei, self.bonds)
 
     def __str__(self):
         return self.__repr__()

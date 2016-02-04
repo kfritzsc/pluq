@@ -36,6 +36,11 @@ class Continuous(object):
     """
     Smoothed data-sets. Methods for extracting properties from a probability
     density function.
+
+    :param pdf: probability distribution function np.array()
+    :param grid: np.array(x) or np.meshgrid(x, y)
+    :param bandwidth: float, 'silverman', 'cv' or None
+    :param levels:
     """
 
     def __init__(self, pdf, grid, bandwidth=None, levels=None):
@@ -373,6 +378,7 @@ def load_pdf_dict(exp_type='c'):
 
 def get_pdf(corr, pdf_dict):
     """
+    Read a correlation from a h5py
 
     :param corr:
     :param pdf_dict:
@@ -412,6 +418,14 @@ def counterpart(region_shape):
 
 
 def make_region(exp_type, file_name, corrs, verbose=True):
+    """
+    Makes regions for correlations in given experiment type by reading hdf5
+    file data and exporting new a shapefiles.
+
+    :param exp_type: :param exp_name: experiment name str in pdffile_exptype
+    :param corrs: [Correlation, ...]
+    :param verbose: if True, prints list of failures
+    """
 
     pdf_dict = load_pdf_dict(exp_type)
 
@@ -470,11 +484,11 @@ def load_region(exp_name='cc', level=95):
     """
     Loads pre-made shapefiles with 2D chemical shift regions into a dictionary.
 
+
+    :param exp_name: experiment name str in shapefile_exptype
     :returns dict['Correlation'] = `shapely.Polygon' or `shapely.MultiPolygon'
     :rtype dict
     """
-
-
     # shape file path
     file_name = shapefile_exptype[exp_name]
     file_path_name = os.path.join('data', 'regions', file_name)
@@ -562,12 +576,13 @@ def make_mask(x, y, polygon, centers=True):
 
 def integrate_region(x, y, data, poly, centers=True):
     """
+    Integrate data in region defined by poly
 
     :param x: X mesh grid
     :param y: y mesh grid
     :param data : data to integrate
     :param poly: shapely Polygon or MultiPolygon
-    :return: binary matrix with np.shape(X)
+    :return: float
     """
     mask = make_mask(x, y, poly, centers=centers)
     return np.sum(data * mask)

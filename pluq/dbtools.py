@@ -6,7 +6,7 @@ KJF
 
 import numpy as np
 import pluq.aminoacids as aminoacids
-from pluq.base import Correlation, ProteinID, ProteinSeq
+from pluq.base import Correlation, ProteinSeq
 
 try:
     import MySQLdb
@@ -20,11 +20,10 @@ class DBMySQL(object):
     multiple database connections must be open at the same time. All operation
     are wrapped in exceptions.
 
-    :param host:
-    :param user:
-    :param password:
-    :param db:
-    :return:
+    :param host: hostname like 'localhost'
+    :param user: username like 'root'
+    :param password: password like 'pass'
+    :param db: database name like pacsy
     """
 
     # TODO: Wrap MySQL errors better.
@@ -43,7 +42,10 @@ class DBMySQL(object):
                 print "MySQL Error: {}".format(str(e))
 
     def query(self, query, dict_cursor=False):
-        """Query the database and return. """
+        """Query the database and return.
+        :param query: sql string
+        :param dict_cursor: bool, False for list return, True for a dict
+        """
         try:
             if dict_cursor:
                 self.dict_cursor.execute(query)
@@ -60,7 +62,9 @@ class DBMySQL(object):
                 print "MySQL Error: {}".format(str(e))
 
     def insert(self, query):
-        """Use query to insert and the commit to the database."""
+        """Use query to insert and the commit to the database.
+        :param query: sql string
+        """
         try:
             self.cursor.execute(query)
             self.connection.commit()
@@ -74,6 +78,8 @@ class DBMySQL(object):
 
     def table_exist(self, name):
         """ Returns True if the database contains a table with the given name.
+
+        :param name: str, name of table
         """
         sql = """
         SELECT table_name
@@ -99,6 +105,8 @@ class DBMySQL(object):
         """
         Use query to insert. You must commit manually!!! This is useful when
         you are inserting data from a loop, etc..
+
+        :param query: sql string
         """
         try:
             self.cursor.execute(query)
@@ -132,6 +140,9 @@ class PacsyCorrelation(object):
     """
     Class for finding data for a specific correlation in the PACSY database.
     Queries are added as methods.
+
+    :param correlation: pluq.base.Correlation
+    :param database: pluq.dbtools.DBMySQL
     """
 
     def __init__(self, correlation, database):
@@ -421,13 +432,15 @@ class PacsyProtein(object):
     """
     Class for working with an individual protein in the PACSY database.
     Queries are used to get properties and are added as methods.
+
+    :param protein_id: pluq.base.ProteinID
+    :param database: pluq.dbtools.DBMySQL
     """
 
     def __init__(self, protein_id, database):
-        assert isinstance(protein_id, ProteinID)
-        assert isinstance(database, DBMySQL)
         self.protein_id = protein_id
         self.database = database
+
 
     @property
     def id_dict(self):
