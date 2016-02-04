@@ -67,7 +67,18 @@ Assignment.__new__.__defaults__ = (None,) * len(Assignment._fields)
 
 
 class AssignmentLine(object):
+    """
+    Little container class for holding assignment and assignment scores.
+    """
     def __init__(self, aa, atoms, scores, ss_scores):
+        """
+        :param aa: 1-letter code amino acid
+        :param atoms: tuple of BMRB atom names
+        :param scores: list of scores, 1 score for each atom in atoms
+        :param ss_scores: list of tuple of scores, 1 tuple of length 3 for each
+            atom in atoms
+
+        """
         self.aa = aa
         self.atoms = atoms
 
@@ -83,10 +94,16 @@ class AssignmentLine(object):
 
     @property
     def joint_score(self):
+        """
+        Returns the product of the scores.
+        """
         return np.product(self.scores)
 
     @property
     def ss_prob(self):
+        """
+        Returns the product of non zero scores converted to probabilities.
+        """
         ss_scores = self.ss_scores
         ss_scores = ss_scores[~np.isnan(ss_scores).any(axis=1)]
         if ss_scores.any():
@@ -100,6 +117,9 @@ class AssignmentLine(object):
 
     @property
     def list(self):
+        """
+        Return a formatted list of the assignment line.
+        """
 
         line = [self.aa]
         line += self.atoms + list(self.scores) + [self.joint_score]
@@ -114,15 +134,14 @@ class AssignmentLine(object):
         return ', '.join(self.list)
 
 
-def get_resonance_choices_1d(resonance, correlations, exp_name, level=95):
+def get_resonance_choices(resonance, correlations, exp_name, level=95):
+    """
+    :param resonance: list of chemical shifts
+    :param correlations: list of pluq.base.Correlation
+    :param exp_name: one of the key from pluq.inbase.standard_experiments
+    :param level: int, one of the defined levels normally in [68, 85, 95]
     """
 
-    :param resonance:
-    :param correlations:
-    :param pdf_dict:
-    :param level:
-    :return:
-    """
     pdf_dict = inbase.load_pdf_dict(exp_name)
     levels = list(pdf_dict.attrs['confidence_levels'])
 
@@ -132,61 +151,32 @@ def get_resonance_choices_1d(resonance, correlations, exp_name, level=95):
         mesg = 'You must chose a confidence level from {}'.format(levels)
         raise ValueError(mesg)
 
+
     # Find all the hits
-    assignments = collections.defaultdict(list)
-    for corr in correlations:
-        try:
-            cs_range = pdf_dict[str(corr)+',levs'][ind]
-        except KeyError:
-            continue
 
-        if min(cs_range) <= resonance <= max(cs_range):
+    exp  = inbase.standard_experiments[exp_name]
 
+    if exp.dims == 1:
+
+        new_correlations = []
+        for corr in correlations:
             try:
-                smooth = inbase.get_pdf(corr, pdf_dict)
-                corr_score = float(smooth.score(resonance))
-            except ValueError:
-                    corr_score = 0
+                cs_range = pdf_dict[str(corr)+',levs'][ind]
             except KeyError:
-                    corr_score = 0
+                continue
 
-            ss_scores = []
-            for ss in ['H', 'C', 'E']:
-                try:
-                    ss_corr = Correlation(corr.aa, corr.atoms, ss)
-                    corr_ss_smooth = inbase.get_pdf(ss_corr, pdf_dict)
-                    ss_scores.append(float(corr_ss_smooth.score(resonance)))
-                except ValueError:
-                    ss_scores.append(0)
-                except KeyError:
-                    ss_scores = None
-                    break
+            if min(cs_range) <= resonance <= max(cs_range):
+                new_correlations.append(corr)
 
-            assign = Assignment(corr.aa, corr.atoms[0], corr_score, ss_scores)
-            assignments[corr.aa].append(assign)
+        correlations = new_correlations
 
-    return assignments
+    else:
+        region_dict = inbase.load_region(exp_name, level)
+        regions = [region_dict[str(x)] for x in correlations]
 
-
-def get_resonance_choices_2d(resonance, correlations, exp_name, level=95):
-
-
-    pdf_dict = inbase.load_pdf_dict(exp_name)
-    levels = list(pdf_dict.attrs['confidence_levels'])
-
-    try:
-        ind = levels.index(level)
-    except ValueError:
-        mesg = 'You must chose a confidence level from {}'.format(levels)
-        raise ValueError(mesg)
-
-
-    region_dict = inbase.load_region(exp_name, level)
-    regions = [region_dict[str(x)] for x in correlations]
-
-    # Find all the hits
-    hits = map(Point(resonance).within, regions)
-    correlations = list(compress(correlations, hits))
+        # Find all the hits
+        hits = map(Point(resonance).within, regions)
+        correlations = list(compress(correlations, hits))
 
 
     # Find all the hits
@@ -221,7 +211,7 @@ def get_resonance_choices_2d(resonance, correlations, exp_name, level=95):
 
 def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
     """
-    Run Pluqin for cs_set
+    Run PLUQin for intra-residue list of chemical shifts
 
     :param cs_set:
     :param seq:
@@ -241,17 +231,11 @@ def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
 
     n = len(cs_set)
     assignment_sets = []
-    if exp.dims == 1:
-        for cs in cs_set:
-            resonance_choices = get_resonance_choices_1d(
-                cs, correlations, exp_name, level)
-            assignment_sets.append(resonance_choices)
 
-    else:
-        for cs in cs_set:
-            resonance_choices = get_resonance_choices_2d(
-                cs, correlations, exp_name, level)
-            assignment_sets.append(resonance_choices)
+    for cs in cs_set:
+        resonance_choices = get_resonance_choices(
+            cs, correlations, exp_name, level)
+        assignment_sets.append(resonance_choices)
 
 
     # Get a list of all possible residue assignments
