@@ -16,7 +16,7 @@ worried about miss-grouping peaks, keep the cut-off value negative, this
 returns all possibilities for each resonance even if some options are missing
 peaks and can not be assigned. The program also provides secondary structure
 (H:C:E probability). The probabilities will be adjusted based on the sequence
-if it is provided, by default the probabilities are adjusted to average
+if it is provided, by default the probabilities are adjusted to the average
 amino-acid frequencies.
 
 Experiments
@@ -64,6 +64,7 @@ import pluq.base as base
 import pluq.inbase as inbase
 from shapely.geometry import Point
 
+__version__ = '0.2.1.0'
 
 Assignment = namedtuple('Assignment', ['res', 'atoms', 'scores', 'ss_scores'],
                         verbose=False)
@@ -214,34 +215,39 @@ def get_resonance_choices(resonance, correlations, exp_name, level=95):
     return assignments
 
 
-def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
+def main(resonance_set, experiment_name='c', seq=None, level=95,
+         frequency=True):
     """
     PLUQin: returns a table of possible intra-residue assignments
     and there likelihoods based on input chemical shifts and optionally the
     sequence. They are sorted first by the assignment joint probability and
     then by the sum of the individual probabilities.
 
-    :param cs_set: list or a list of lists of chemical shifts floats
-    :param exp_name: one of the keys from pluq.inbase.standard_experiments
+    :param resonance_set: list or a list of lists of chemical shifts floats
+    :param experiment_name: one of the keys from inbase.standard_experiments
     :param seq: protein sequence 1-letter amino-acid codes
-    :type seq: iterable or None
+    :type seq: iterable or None, defualt is the 20 standard amino-acids
     :param level: int, one of the defined levels normally in [68, 85, 95]
-    :param frequency:
+    :param frequency: If true accounts for the frequency of amino acids in
+        the sequence. If no sequence it used the average amino acid
+        frequencies.
+    :returns: list of AssignmentLine.list
     """
     try:
-        exp = inbase.standard_experiments[exp_name]
+        exp = inbase.standard_experiments[experiment_name]
     except KeyError:
-        raise ValueError('{} is not a known experiment'.format(exp_name))
+        mesg = '{} is not a known experiment'.format(experiment_name)
+        raise ValueError(mesg)
 
     # A little input validation.
-    if isinstance(cs_set[0], collections.Iterable):
-        peak_dims = len(cs_set[0])
+    if isinstance(resonance_set[0], collections.Iterable):
+        peak_dims = len(resonance_set[0])
     else:
         peak_dims = 1
 
     if exp.dims != peak_dims:
-        raise ValueError(
-            'The peak dims does not equal the dims of the experiment!')
+        mesg = 'The peak dims does not equal the dims of the experiment!'
+        raise ValueError(mesg)
 
     # Build a list of possible assignments
     protein = base.ProteinSeq(seq)
@@ -249,11 +255,11 @@ def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
         exp, structure=False, ignoresymmetry=True, offdiagonal=False)
 
     # Assign and score each resonance in cs_set.
-    n = len(cs_set)
+    n = len(resonance_set)
     assignment_sets = []
-    for cs in cs_set:
+    for cs in resonance_set:
         resonance_choices = get_resonance_choices(
-            cs, correlations, exp_name, level)
+            cs, correlations, experiment_name, level)
         assignment_sets.append(resonance_choices)
 
     # Get a list of all possible residue assignments
@@ -266,6 +272,7 @@ def main(cs_set, exp_name='c', seq=None, level=95, frequency=True):
 
         # Regroup and fill in placeholder  nulls
         rows = []
+        # TODO: should append None, but it break collections.product
         for assign in res_assignments:
             if not assign:
                 rows.append('-')
@@ -376,7 +383,6 @@ if __name__ == "__main__":
 
     # Parse the options.
     parser_dict = vars(parser.parse_args())
-
 
     if parser_dict['peak'] is None:
         parser.error('Use pluqin.py -h to see options.')
