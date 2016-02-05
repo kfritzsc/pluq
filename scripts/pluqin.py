@@ -44,14 +44,14 @@ Pro-(CD,N)-Sheet, Thr-(CA,N)-Helix
 
 References
 ----------
-[1] K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally Selective
-Multidimensional Chemical Shift Ranges in Proteins from a PACSY Database
-Purged Using Intrinsic Quality Criteria " J. Biomol. NMR 2016
-doi:10.1007/s10858-016-0013-5
+1. K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally Selective
+   Multidimensional Chemical Shift Ranges in Proteins from a PACSY Database
+   Purged Using Intrinsic Quality Criteria " J. Biomol. NMR 2016
+   doi:10.1007/s10858-016-0013-5
 
-[2]	Lee, W.; Yu, W.; Kim, S.; Chang, I.; Lee, W. PACSY, a Relational Database
-Management System for Protein Structure and Chemical Shift Analysis. J Biomol
-NMR 2012, 54 (2),169–179. doi: 10.1007/s10858-012-9660-3
+2. Lee, W.; Yu, W.; Kim, S.; Chang, I.; Lee, W. PACSY, a Relational Database
+   Management System for Protein Structure and Chemical Shift Analysis. J
+   Biomol NMR 2012, 54 (2),169–179. doi: 10.1007/s10858-012-9660-3
 
 Please kindly cite the two references if use of this code leads to publication.
 """

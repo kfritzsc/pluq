@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
+====
 PIQC
 ====
-Purging by Intrinsic Quality Criteria:
+Purging by Intrinsic Quality Criteria
+-------------------------------------
 Used to identify mis-referenced and otherwise comprised protein chemical shift
 data sets from the PACSY database.
 
@@ -28,7 +30,9 @@ References
 
 2. Lee, W.; Yu, W.; Kim, S.; Chang, I.; Lee, W. PACSY, a Relational Database
    Management System for Protein Structure and Chemical Shift Analysis. J
-   Biomol NMR 2012, 54 (2),169–179.
+   Biomol NMR 2012, 54 (2),169–179. doi: 10.1007/s10858-012-9660-3
+
+Please kindly cite the two references if use of this code leads to publication.
 """
 
 import time
@@ -76,7 +80,8 @@ def read_cs_stats(cs_stats_file=None):
     cs_stats = defaultdict(_dd)
 
     with open(cs_stats_file, 'r') as fid:
-        reader = csv.reader(fid, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+        reader = csv.reader(
+            fid, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
         for row in reader:
             corr = Correlation(row[0], (row[1], ), row[2])
             cs_stats[corr]['mode'] = row[3]
@@ -201,7 +206,8 @@ def calc_cs_offset_array(cs, cs_stats):
 
         # There must be a few improperly formatted float in the database?
         if np.isnan(delta):
-            print 'One of the chemical shift given was not a number, skipped it.'
+            mesg = 'One of the chemical shifts given was not a number.'
+            print(mesg)
             continue
 
         deltas.append(delta)
@@ -232,7 +238,7 @@ def calc_cs_stats(pacsy_database, verbose=True):
         total = len(correlation_list)
         sys.stdout.write('Calculating chemical shift statistics.')
 
-    # Go throught every correlation.
+    # Go through every correlation.
     for n, corr in enumerate(correlation_list):
         data = PacsyCorrelation(corr, pacsy_database)
 
