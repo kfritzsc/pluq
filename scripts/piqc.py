@@ -4,6 +4,7 @@
 ====
 PIQC
 ====
+
 Purging by Intrinsic Quality Criteria
 -------------------------------------
 Used to identify mis-referenced and otherwise comprised protein chemical shift
@@ -23,6 +24,7 @@ thousand proteins. Calculation times on on a 6-Core 3.5 GHz Xeon E5 Mac Pro.
 
 References
 ----------
+
 1. K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally Selective
    Multidimensional Chemical Shift Ranges in Proteins from a PACSY Database
    Purged Using Intrinsic Quality Criteria " J. Biomol. NMR 2016
@@ -38,194 +40,30 @@ Please kindly cite the two references if use of this code leads to publication.
 import time
 import os
 import sys
-import csv
 from collections import defaultdict
-
 from pluq.inbase import estimate_pdf
 
 import numpy as np
-from sklearn.neighbors import KernelDensity
-from sklearn.grid_search import GridSearchCV
-
+import pluq.fileio
 from pluq.aminoacids import aa_list, aa_atoms
 from pluq.base import Correlation, ProteinID
 from pluq.dbtools import DBMySQL, PacsyCorrelation, PacsyProtein
 
 
-def read_seq_cs(seq_cs_file):
-    """
-    """
-    protein_stats = defaultdict(_dd)
-
-    with open(seq_cs_file, 'r') as fid:
-        reader = csv.reader(fid, delimiter=',', quotechar='"',
-                            quoting=csv.QUOTE_NONNUMERIC)
-        for row in reader:
-            key_id = row[0]
-            element = row[1]
-            if element == 'C':
-                mode, mean, std, count = row[-5:-1]
-
-                protein_stats[key_id]['mode'] = mode
-                protein_stats[key_id]['mean'] = mean
-                protein_stats[key_id]['std'] = std
-                protein_stats[key_id]['count'] = count
-    return protein_stats
-
-
-def read_cs_stats(cs_stats_file=None):
-
-    if not cs_stats_file:
-        cs_stats_file = '/Users/kjf/git/pluqin_env/pluq/pluq/data/piqc_db/CS_STATS_DB.txt'
-    cs_stats = defaultdict(_dd)
-
-    with open(cs_stats_file, 'r') as fid:
-        reader = csv.reader(
-            fid, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-        for row in reader:
-            corr = Correlation(row[0], (row[1], ), row[2])
-            cs_stats[corr]['mode'] = row[3]
-            cs_stats[corr]['avg'] = row[4]
-            cs_stats[corr]['std'] = row[5]
-            cs_stats[corr]['min95'] = row[6]
-            cs_stats[corr]['max95'] = row[7]
-    return cs_stats
-
-
-def analyse_cs_data(data, params=None,  **kwargs):
-    """ Analyse chemical shift data from a PacsyCorrelation with 1 atom.
-
-    Finds the chemical shift modes for a chemical shift distribution. To
-    accurately find the mode, performs gaussian kernel density estimation
-    (KDE) for each distributions. The band-with of the KDE is optimized using
-    a grid search and k-fold cross-validation.
-
-    :param data: chemical shifts data for 1 atom as a PacsyCorrelation
-    :type data: PacsyCorrelation
-    :return: (mode, avg, sd min95, max95)
-    :raises ValueError: if no chemical shift data or if KDE fails
-    """
-    # Make the evaluation grid.
-    data = np.array(data).flaten()
-    min_cs = np.min(data) - 0.2
-    max_cs = np.max(data) + 0.2
-    num = int(max_cs - min_cs) / 0.1
-    if num == 0:
-        num = int((max_cs - min_cs) / 0.01)
-    x_grid = np.linspace(min_cs, max_cs, num)
-    smooth = estimate_pdf(data, grid=x_grid, bandwidth='cv', cv=10)
-
-    mode = smooth.mode()
-    avg = np.mean(data)
-    std = np.std(data)
-    levels =list(smooth.levels(data, 95))
-    min95 = levels[0]
-    max95 = levels[1]
-    return mode, avg, std, min95, max95
-
-
-def fit_cs_offset_data(deltas, params=None,  **kwargs):
-    # Parse input cross validation parameters or use defaults.
-    if not params:
-        # Default cross validation parameters are replace by the kwargs.
-        params = {'bandwidth': np.linspace(0.05, 1.0, 10)}
-
-    try:
-        kwargs['cv']
-    except KeyError:
-        kwargs['cv'] = 10
-
-    try:
-        kwargs['n_jobs']
-    except KeyError:
-        kwargs['n_jobs'] = -1
-
-    deltas = np.array(deltas)
-
-    # Set up a scoring grid.
-    # This is a little ugly.
-    scale = 0.1
-    mincs = np.min(deltas) - 0.2
-    maxcs = np.max(deltas) + 0.2
-    num = int(maxcs - mincs) / scale
-
-    while num < 50:
-        scale /= 10
-        num = int(maxcs - mincs) / scale
-        if scale <= 0.00001:
-            break
-
-    if num < 50:
-        # This data has no has a very small distribution.
-        raise ValueError
-
-    x_grid = np.linspace(mincs, maxcs, num)
-
-    return estimate_pdf(deltas, grid=x_grid, cv=3)
-
-
-def analyse_protein_cs_fit(xgrid, pdf, deltas):
-    """
-
-    :param deltas:
-    :param params:
-    :param kwargs:
-    :return:
-    """
-
-    mode_ind = np.argmax(pdf)
-
-    # Extract all the statistics.
-    mode = xgrid[mode_ind]
-    mean = np.mean(deltas)
-    std = np.std(deltas)
-    count = len(deltas)
-    return mode, mean, std, count
-
-
-def calc_cs_offset_array(cs, cs_stats):
-    """
-    :param cs: tuple(atom type -- Correlation, chemical shift -- float)
-    :param cs_stats: chemcial shift statistics dict from analyse_cs_data
-    :return: list of of chemical shift offsets
-    """
-    deltas = []
-    for corr, cs in cs:
-        # Get the expected chemical shifts
-        # If we don't have the expected chemical shifts just skip it.
-        try:
-            expected_cs = cs_stats[corr]['mode']
-        except KeyError:
-            continue
-        # Also have to check for an empty dict
-        if not expected_cs:
-            continue
-
-        # Compare the found chemical shift to the expected
-        delta = cs - expected_cs
-
-        # There must be a few improperly formatted float in the database?
-        if np.isnan(delta):
-            mesg = 'One of the chemical shifts given was not a number.'
-            print(mesg)
-            continue
-
-        deltas.append(delta)
-    return deltas
-
-
 def calc_cs_stats(pacsy_database, verbose=True):
     """
-    Given a PACSY database, this function analysis the chemical shifts for all
-    the H, C, N atom of the 20 canonical amino acid residues in Helix, Sheet
-    Coil and Turn secondary structures and groups the data into a Python
-    dictionary.
+    Given a PACSY database connection, this function analyzes the chemical
+    shifts for all the H, C, N atom of the 20 canonical amino acid residues in
+    Helix, Sheet Coil and Turn secondary structures and groups the data into a
+    Python dictionary.
 
-    :param pacsy_database:
+    :param pacsy_database: pacsy database connection pluq.dbtools.DBMySQL
     :param verbose: print out progress to the screen
-    :type pacsy_database: DBMySQL
-    :return: cs_stats, no_good
+    :return: cs_stats dictionary, no_good list
     """
+
+    params = {'bandwidth': np.linspace(0.05, 1.0, 10)}
+
     cs_stats = defaultdict(_dd)
 
     # Keep track of any correlation with no database data.
@@ -234,8 +72,8 @@ def calc_cs_stats(pacsy_database, verbose=True):
     # Generate a list of the needed correlations
     correlation_list = _build_correlation_list()
 
+    total = len(correlation_list)
     if verbose:
-        total = len(correlation_list)
         sys.stdout.write('Calculating chemical shift statistics.')
 
     # Go through every correlation.
@@ -243,17 +81,27 @@ def calc_cs_stats(pacsy_database, verbose=True):
         data = PacsyCorrelation(corr, pacsy_database)
 
         try:
-            stats = analyse_cs_data(data)
+            data = np.array(data).flaten()
+            min_cs = np.min(data) - 0.2
+            max_cs = np.max(data) + 0.2
+            num = int(max_cs - min_cs) / 0.1
+            if num == 0:
+                num = int((max_cs - min_cs) / 0.01)
+            x_grid = np.linspace(min_cs, max_cs, num)
+
+            smooth = estimate_pdf(data, grid=x_grid, bandwidth='cv',
+                                  params=params, cv=10)
+
         except ValueError:
             no_good.append(corr)
             continue
 
-        mode, avg, std, min95, max95 = stats
-        cs_stats[corr]['mode'] = mode
-        cs_stats[corr]['avg'] = avg
-        cs_stats[corr]['std'] = std
-        cs_stats[corr]['min95'] = min95
-        cs_stats[corr]['max95'] = max95
+        cs_stats[corr]['mode'] = smooth.mode
+        cs_stats[corr]['avg'] = np.mean(data)
+        cs_stats[corr]['std'] = np.std(data)
+        levels = smooth.levels(data, 95)
+        cs_stats[corr]['min95'] = np.min(levels)
+        cs_stats[corr]['max95'] = np.min(levels)
 
         if verbose:
             progress = 'Finished {}, \
@@ -268,7 +116,21 @@ def calc_cs_stats(pacsy_database, verbose=True):
     return cs_stats, no_good
 
 
-def calc_protein_offset_stats(key_ids, pacsy_db, cs_stats, verbose=True):
+def calc_seq_cs(pacsy_db, cs_stats, key_ids, verbose=True):
+    """
+    Given a PACSY database connection, a list of key_ids, and a dictionary
+    with chemicals shift statistics for the 20 canonical amino acid
+    this function analyzes each protien and groupd the statistics into a
+    returned dictionary.
+    :param key_ids: list of pacsy key_ids
+    :param cs_stats: from calc_cs_stats
+    :param pacsy_database: pacsy database connection pluq.dbtools.DBMySQL
+    :param verbose: print out progress to the screen
+    :return: cs_stats dictionary, no_good list
+    """
+
+    params = {'bandwidth': np.linspace(0.05, 1.0, 10)}
+
     seq_offsets = defaultdict(dict)
     protein_no_data = []
 
@@ -281,7 +143,6 @@ def calc_protein_offset_stats(key_ids, pacsy_db, cs_stats, verbose=True):
 
         protein_id = ProteinID(key_id, "KEY_ID")
         pacsy_protein = PacsyProtein(protein_id, pacsy_db)
-
         cs_data = pacsy_protein.cs_data()
 
         # Sort the data by nucleus type and find the difference from ideal.
@@ -293,20 +154,43 @@ def calc_protein_offset_stats(key_ids, pacsy_db, cs_stats, verbose=True):
                 protein_no_data.append((key_id, element))
                 continue
             try:
-                offsets = calc_cs_offset_array(cs, cs_stats)
+                deltas = _calc_cs_offset_array(cs, cs_stats)
             except ValueError:
                 protein_no_data.append((key_id, element))
                 continue
 
             try:
-                xgrid, pdf = fit_cs_offset_data(offsets)
-                offset_stats = analyse_protein_cs_fit(xgrid, pdf, offsets)
-                mode, mean, std, count = offset_stats
+
+                # Set up a scoring grid.
+                scale = 0.1
+                mincs = np.min(deltas) - 0.2
+                maxcs = np.max(deltas) + 0.2
+                num = int(maxcs - mincs) / scale
+
+                while num < 50:
+                    scale /= 10
+                    num = int(maxcs - mincs) / scale
+                    if scale <= 0.00001:
+                        break
+
+                if num < 50:
+                    # This data has no has a very small distribution.
+                    raise ValueError
+
+                x_grid = np.linspace(mincs, maxcs, num)
+
+                smooth = estimate_pdf(deltas,  grid=x_grid, bandwidth='cv',
+                                      params=params, cv=10)
             except ValueError:
                 protein_no_data.append((key_id, element))
                 continue
 
-            if element=='C':
+            mode = smooth.mode()
+            mean = np.mean(deltas)
+            std = np.std(deltas)
+            count = len(deltas)
+
+            if element == 'C':
                 piqc_good = all([abs(mode) <= 1.0,  std <= 4.0])
             else:
                 piqc_good = True
@@ -350,7 +234,7 @@ def _build_correlation_list():
             if atom[0] not in {'H', 'C', 'N'}:
                 continue
 
-            # For the backbone atoms look at each secondary structure independently.
+            # For the backbone atoms look at each ss independently.
             if atom in {'C', 'CA', 'CB', 'H', 'N'}:
                 ss_list = ['H', 'E', 'C', 'T']
             else:
@@ -363,76 +247,85 @@ def _build_correlation_list():
     return correlation_list
 
 
-def main(pacsy_db, recalculate_cs_stats=False, cs_stats_file='CS_STATS_DB.txt',
-         key_ids=None, seq_offsets_file='SEQ_CS_DB.txt', verbose=True):
+def _calc_cs_offset_array(cs, cs_stats):
+    """
+    :param cs: tuple(atom type -- Correlation, chemical shift -- float)
+    :param cs_stats: chemcial shift statistics dict from analyse_cs_data
+    :return: list of of chemical shift offsets
+    """
+    deltas = []
+    for corr, cs in cs:
+        # Get the expected chemical shifts
+        # If we don't have the expected chemical shifts just skip it.
+        try:
+            expected_cs = cs_stats[corr]['mode']
+        except KeyError:
+            continue
+        # Also have to check for an empty dict
+        if not expected_cs:
+            continue
+
+        # Compare the found chemical shift to the expected
+        delta = cs - expected_cs
+
+        # There must be a few improperly formatted float in the database?
+        if np.isnan(delta):
+            mesg = 'One of the chemical shifts given was not a number.'
+            print(mesg)
+            continue
+
+        deltas.append(delta)
+
+    return np.array(deltas)[:, None]
+
+
+def main(pacsy_db, key_ids=None, cs_stats_file=None,
+         seq_cs_file='SEQ_CS_DB.txt', verbose=True):
     """
     Runs the PIQC analysis on a PACSY database, and outputs up to two tables in
-    two separate csv files. The first table 'CS_STATS_DB.txt' has chemical shift
-    statistics for all the atom types (with data is the database). The second
-    table 'seq_offsets' has statistics on the chemical shift offset for
+    two separate csv files. The first table 'CS_STATS_DB.txt' has chemical
+    shift statistics for all the atom types (with data is the database). The
+    second table 'seq_offsets' has statistics on the chemical shift offset for
     proteins.
-
-    :param pacsy_db:
-    :param csv_file: bool if True writes csv table
-    :param file_path: file path for output csv file, default:`CS_STATS_DB.txt`
-    :param verbose:
     """
 
     # Step 1: Get all the chemical shift statistics.
-    if recalculate_cs_stats:
+
+    if cs_stats_file:
+
         cs_stats, bad_correlations = calc_cs_stats(pacsy_db, verbose)
 
         if verbose:
             # The following correlation are not in the database:
-            # Glu-(HE2)-All,  Asp-(HD2)-All, Lys-(HZ1)-All, Pro-(H2)-All,
-            # Pro-(H3)-All, Tyr-(HH)-All
             if bad_correlations:
                 print('The following correlation are not in the database: ')
                 for bad_correlation in bad_correlations:
                     print(bad_correlation)
 
         # Right out cs_Stats to a csv file:
-        with open(cs_stats_file, 'w+') as fid:
-            writer = csv.writer(fid, delimiter=',',
-                                quotechar='"',
-                                quoting=csv.QUOTE_NONNUMERIC)
-            stat_columns = ['mode', 'avg', 'std', 'min95', 'max95']
-            for corr in cs_stats:
-                atom_type = [corr.aa, corr.atoms[0].strip(), corr.ss]
-                stats = [round(cs_stats[corr][x], 2) for x in stat_columns]
-                writer.writerow(atom_type + stats)
+        pluq.fileio.write_cs_stats(cs_stats, cs_stats_file)
 
     else:
-        # Don't recalculate the chemical shift statistics, read them from the
-        # given csv file.
-        cs_stats = read_cs_stats()
+        # read cs stats from fie
+        cs_stats = pluq.fileio.read_cs_stats(cs_stats_file)
 
-    # Step 2: For every protein compare each chemical shift to the expected mode.
+    # Step 2: For every protein compare chemical shifts to the expected mode.
     if not key_ids:
         key_ids = pacsy_db.query('SELECT KEY_ID from seq_db')
         key_ids = [int(x[0]) for x in key_ids]
 
-    args = (key_ids,  pacsy_db, cs_stats, verbose)
-    seq_offsets, bad_protein = calc_protein_offset_stats(*args)
+    protein_stats, bad_protein = calc_seq_cs(
+        pacsy_db, cs_stats, key_ids, verbose)
 
-
-    # Output seq offsets to a to a csv file:
-    with open(seq_offsets_file, 'w+') as fid:
-        writer = csv.writer(fid, delimiter=',',
-                            quotechar='"',
-                            quoting=csv.QUOTE_NONNUMERIC)
-        stat_columns = ['mode', 'avg', 'std', 'count', 'piqc']
-        for seq in seq_offsets:
-            stats = [round(seq_offsets[seq][x], 2) for x in stat_columns]
-            writer.writerow([seq[0], seq[1]] + stats)
+    pluq.fileio.write_seq_cs(protein_stats, seq_cs_file)
 
     if verbose:
-        if recalculate_cs_stats:
+        if cs_stats_file:
             print('Output {}'.format(cs_stats_file))
-        print('Output {}'.format(seq_offsets_file))
+        print('Output {}'.format(seq_cs_file))
 
 
-    return cs_stats, seq_offsets
+    return cs_stats, protein_stats
 
 
 if __name__ == '__main__':

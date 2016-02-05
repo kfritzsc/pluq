@@ -4,6 +4,7 @@
 ======
 PLUQin
 ======
+
 A program to help assign protein chemical shifts peaks. Especially helpful for
 assigning chemical shift correlations in a 2D plane. The data used by this
 program comes from the PIQC [1] analysis of the PACSY/BMRB [2] database.
@@ -23,7 +24,7 @@ Experiments
 ------------
 
 - 2D Carbon 1-bond: cc
-- 2D Carbon-Nitrogen (ie. mostly CA-N ) 1-bond: cn
+- 2D Carbon-Nitrogen 1-bond (ie. mostly CA-N ): cn
 - 1D Carbon: c
 - 1D Nitrogen: n
 - 1D Proton: h
@@ -44,6 +45,7 @@ Pro-(CD,N)-Sheet, Thr-(CA,N)-Helix
 
 References
 ----------
+
 1. K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally Selective
    Multidimensional Chemical Shift Ranges in Proteins from a PACSY Database
    Purged Using Intrinsic Quality Criteria " J. Biomol. NMR 2016
@@ -61,6 +63,7 @@ from itertools import compress, product
 import numpy as np
 from pluq.base import Correlation
 import pluq.base as base
+import pluq.fileio as fileio
 import pluq.inbase as inbase
 from shapely.geometry import Point
 
@@ -138,7 +141,7 @@ class AssignmentLine(object):
         return ', '.join(self.list)
 
 
-def get_resonance_choices(resonance, correlations, exp_name, level=95):
+def get_resonance_choices(resonance, correlations, experiment_name, level=95):
     """
     Determine which chemical shift ranges at the given confidence level for an
     experiment contain the input resonance. If so adds the matching correlation
@@ -148,12 +151,12 @@ def get_resonance_choices(resonance, correlations, exp_name, level=95):
 
     :param resonance: float or list of float chemical shifts.
     :param correlations: list of pluq.base.Correlation
-    :param exp_name: one of the key from pluq.inbase.standard_experiments
+    :param experiment_name: one of the key from inbase.standard_experiments
     :param level: int, one of the defined levels normally in [68, 85, 95]
-    :return dict[res] = list[Assignment, ...]
+    :return dict[res] = list(Assignment, ...)
     """
 
-    pdf_dict = inbase.load_pdf_dict(exp_name)
+    pdf_dict = inbase.read_pdf(experiment_name)
     levels = list(pdf_dict.attrs['confidence_levels'])
 
     try:
@@ -163,9 +166,8 @@ def get_resonance_choices(resonance, correlations, exp_name, level=95):
         raise ValueError(mesg)
 
     # Find all the hits
-    exp = inbase.standard_experiments[exp_name]
+    exp = inbase.standard_experiments[experiment_name]
     if exp.dims == 1:
-
         new_correlations = []
         for corr in correlations:
             try:
@@ -175,11 +177,10 @@ def get_resonance_choices(resonance, correlations, exp_name, level=95):
 
             if min(cs_range) <= resonance <= max(cs_range):
                 new_correlations.append(corr)
-
         correlations = new_correlations
 
     else:
-        region_dict = inbase.load_region(exp_name, level)
+        region_dict = fileio.read_region(experiment_name, level)
         regions = [region_dict[str(x)] for x in correlations]
 
         # Find all the hits

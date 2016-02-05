@@ -9,7 +9,6 @@ KJF 2014-17-04
 # Import everything and the kitchen sink.
 import os
 import sys
-from pkg_resources import resource_filename
 
 import h5py
 import numpy as np
@@ -22,7 +21,9 @@ import fiona
 from shapely import speedups
 from shapely.prepared import prep
 from shapely.ops import transform
-from shapely.geometry import MultiPolygon, Polygon, Point, mapping, shape
+from shapely.geometry import MultiPolygon, Polygon, Point, mapping
+
+from pluq.fileio import read_pdf
 from pluq.base import Correlation, ProteinSeq, CSExperiment
 
 
@@ -181,7 +182,7 @@ def estimate_pdf(data, grid=None, bandwidth=None, params=None, **kwargs):
         bandwidth = estimate_bandwidth(data, bandwidth, params, **kwargs)
 
     # If needed score the PDF over a grid using limits and bandwidth_sample.
-    if not grid:
+    if grid is None:
         try:
             limits = kwargs['limits']
         except KeyError:
@@ -293,12 +294,6 @@ def under_sample_data(data, sampled_fraction):
     return data[choice]
 
 
-pdffile_exptype = {'cc': 'cc_pdf_all.h5',
-                   'cn': 'cn_pdf_all.h5',
-                   'c': 'c_pdf_all.h5',
-                   'n': 'n_pdf_all.h5',
-                   'h': 'h_pdf_all.h5'}
-
 standard_experiments = {'cc': CSExperiment(('C', 'C'), bonds=1),
                         'cn': CSExperiment(('C', 'N'), bonds=1),
                         'c': CSExperiment(('C', )),
@@ -364,18 +359,6 @@ def make_pdf(exp, pacsy, file_name, seq=None, confidence_levels=[68, 80, 95],
             print(bad_corr)
 
 
-def load_pdf_dict(exp_type='c'):
-    """
-    Loads pre-made 1D PDF into dictionary
-    """
-    # shape file path
-    file_name = pdffile_exptype[exp_type]
-    file_path_name = os.path.join('data', 'pdf', file_name)
-    pdf_file = resource_filename(__name__, file_path_name)
-
-    return h5py.File(pdf_file, 'r')
-
-
 def get_pdf(corr, pdf_dict):
     """
     Read a correlation from a h5py
@@ -403,16 +386,7 @@ def get_pdf(corr, pdf_dict):
     return Continuous(pdf, grid, levels=levels)
 
 
-# Functions for making, saving, loading and manipulating regions.
-# Functions for making, saving and loading PDF for different experiments.
-schema = {'geometry': 'Polygon',
-          'properties': {'corr': 'str',
-                         'levels': 'float', }}
-
-shapefile_exptype = {'cc': os.path.join('cc_region_all', 'cc_region_all.shp'),
-                     'cn': os.path.join('cn_region_all', 'cn_region_all.shp')}
-
-
+# Functions for making, saving, and manipulating regions.
 def counterpart(region_shape):
     return transform(lambda x, y, z=None: (y, x), region_shape)
 
@@ -427,7 +401,7 @@ def make_region(exp_type, file_name, corrs, verbose=True):
     :param verbose: if True, prints list of failures
     """
 
-    pdf_dict = load_pdf_dict(exp_type)
+    pdf_dict = read_pdf(exp_type)
 
     if os.path.isfile(file_name):
         file_operation = 'a'
@@ -478,41 +452,6 @@ def _region(smooth, level):
     for vert in vertex:
         polygon.append((vert, None))
         return MultiPolygon(polygon)
-
-
-def load_region(exp_name='cc', level=95):
-    """
-    Loads pre-made shapefiles with 2D chemical shift regions into a dictionary.
-
-
-    :param exp_name: experiment name str in shapefile_exptype
-    :returns dict['Correlation'] = `shapely.Polygon' or `shapely.MultiPolygon'
-    :rtype dict
-    """
-    # shape file path
-    file_name = shapefile_exptype[exp_name]
-    file_path_name = os.path.join('data', 'regions', file_name)
-    shape_file = resource_filename(__name__, file_path_name)
-
-    # Get the Shape files, combine them and add them to a dictionary.
-    regions = dict()
-    with fiona.open(shape_file, 'r', 'ESRI Shapefile', schema) as shp:
-
-        for s in shp:
-
-            corr = s['properties']['corr']
-
-            if s['properties']['levels'] != level:
-                continue
-
-            region = shape(s['geometry'])
-
-            if corr in regions.keys():
-                regions[str(corr)] = regions[corr].union(region)
-            else:
-                regions[str(corr)] = region
-
-    return regions
 
 
 # Function rasterizing regions into binary masks

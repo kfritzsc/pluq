@@ -4,7 +4,7 @@ from matplotlib.colors import LogNorm
 
 
 from pluq.base import Correlation
-from pluq.inbase import load_pdf_dict, get_pdf, estimate_pdf
+from pluq.inbase import read_pdf, get_pdf, estimate_pdf
 from pluq.dbtools import DBMySQL, PacsyCorrelation
 
 

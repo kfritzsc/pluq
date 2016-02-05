@@ -4,7 +4,7 @@ from matplotlib.colors import LogNorm
 
 
 from pluq.base import Correlation
-from pluq.inbase import load_pdf_dict, get_pdf, estimate_pdf
+from pluq.inbase import read_pdf, get_pdf, estimate_pdf
 from pluq.dbtools import DBMySQL, PacsyCorrelation
 
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
                           params={'bandwidth': np.linspace(0.4, 1.5, 15)})
 
 
-    pdf_dict = load_pdf_dict('cc')
+    pdf_dict = read_pdf('cc')
     other = get_pdf(corr, pdf_dict)
 
     plt.figure(1)
