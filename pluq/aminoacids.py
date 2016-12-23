@@ -515,7 +515,7 @@ def traverse_atoms(res, start, end, path=None):
             raise ValueError('{} is not an atom in {}.'.format(end, res))
         # Used for debugging.
         else:
-            print 'Unknown Error: Please fix and/or report.'
+            print('Unknown Error: Please fix and/or report.')
             raise
 
 

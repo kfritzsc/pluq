@@ -8,7 +8,8 @@ file_name = 'cn_region_all'
 
 
 protein = ProteinSeq(None)
-corrs = protein.relevant_correlations(exp, ignoresymmetry=True, offdiagonal=False)
+corrs = protein.relevant_correlations(exp, ignoresymmetry=True,
+    offdiagonal=False)
 
 
 # make_pdf(exp, pacsy, file_name)

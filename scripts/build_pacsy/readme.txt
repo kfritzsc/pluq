@@ -3,7 +3,7 @@ Keith's PACSY/PIQC Notes
 
 Starting from scratch.
 ----------------------
-total computer run time ~ 4.0 hours
+total computer run time ~ 2.0 hours
 1a) Import pacsy-defs.sql and piqc-def.sql into a MySQL database.
    - Sequal Pro makes this easy.
 2a) Run load_pacsy.py to fill all the regular pacsy tables with data from .csv files.

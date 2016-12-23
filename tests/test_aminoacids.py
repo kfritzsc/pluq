@@ -103,8 +103,8 @@ class KnownBondDistance(unittest.TestCase):
 
     def test_bonds_between_atoms(self):
         """
-        Test ability to determine the number of bonds between atoms in the 20 common
-        amino-acids.
+        Test ability to determine the number of bonds between atoms
+        in the 20 common amino-acids.
         """
 
         for group, bonds in self.known_bonds:

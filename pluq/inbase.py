@@ -524,4 +524,5 @@ def integrate_region(x, y, data, poly, centers=True):
     :return: float
     """
     mask = make_mask(x, y, poly, centers=centers)
+    #TODO: This need to be devided by the area.
     return np.sum(data * mask)

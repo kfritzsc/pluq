@@ -10,13 +10,14 @@ import pluq.aminoacids as aminoacids
 
 class Correlation(object):
     """
-    Container class validates inputs and groups information together
-    to define complete assignable intra-residue correlation with secondary-
-    structure information.
+    Validates inputs and groups information together to define a
+    complete assignable intra-residue correlation with
+    secondary-structure information.
 
     :param aa: 1 letter str, 1 of the 20 canonical amino-acids
-    :param atoms: valid bmrb atom names in an iterable, example  ('CA', )
-    :param ss: secondary-structure name from STRIDE  or none
+    :param atoms: valid bmrb atom names in an iterable, example
+        ('CA', )
+    :param ss: secondary-structure name from STRIDE or none
     """
 
     def __init__(self, aa, atoms, ss='X'):
@@ -38,8 +39,8 @@ class Correlation(object):
 
     def counterpart(self):
         """
-        Generates the symmetric counterpart of the correlation. If not a 2d
-        returns an error.
+        Generates the symmetric counterpart of the correlation. If
+        not a 2d returns an error.
 
         :rtype Correlation
         :raises ValueError if not 2d
@@ -79,8 +80,8 @@ class Correlation(object):
 
 class ProteinID(object):
     """
-    Container class validates inputs and groups `id` and `id type` together to
-    define a protein in the PACSY database.
+    Validates inputs and groups `id` and `id type` together to define
+    a protein in the PACSY database.
 
     :param id_value: int or str
     :param idtype: str in {'ID', 'KEY_ID', 'PDB_ID', 'BMRB_ID'}
@@ -97,7 +98,7 @@ class ProteinID(object):
     def idtype(self, idtype):
         """ Validate the id type."""
         if idtype not in {'ID', 'KEY_ID', 'PDB_ID', 'BMRB_ID'}:
-            raise ValueError("{} if not a valid idtype.".format(idtype))
+            raise ValueError("{} not a valid idtype.".format(idtype))
         self._idtype = idtype
 
     def __str__(self):
@@ -108,12 +109,13 @@ class ProteinSeq(object):
     """
     Protein Sequence Class.
 
-    :param sequence: iterable of 1-letter amino acid code str. If False,
-        default to the 20 amino acids in alphabetical order.
+    :param sequence: iterable of 1-letter amino acid code str. If
+        False, default to the 20 amino acids in alphabetical order.
     """
     def __init__(self, sequence):
         """
-        :param sequence: Any iterable with one-letter amino-acid codes.
+        :param sequence: Any iterable with one-letter amino-acid
+            codes.
         """
         self.seq = sequence
         if not sequence:
@@ -132,7 +134,7 @@ class ProteinSeq(object):
         else:
             for s in sequence:
                 if s not in aminoacids.aa_list:
-                    mesg = '{} is not a supported amino-acid'.format(s)
+                    mesg = '{} is not an amino-acid'.format(s)
                     raise ValueError(mesg)
             self._seq = sequence
 
@@ -156,17 +158,17 @@ class ProteinSeq(object):
             return aa_fractions
 
     def relevant_correlations(self, cs_exp, structure=True,
-                              ignoresymmetry=False, offdiagonal=True):
+            ignoresymmetry=False, offdiagonal=True):
         """
-        Generates a list of unique correlation determined by the sequence and
-        the required instance of CSExperiment.
+        Generates a list of unique correlation determined by the
+        sequence and the required instance of CSExperiment.
 
         :param cs_exp: Instance of CSExperiment.
-        :param structure: bool, if True common second-structures are included
-            in correlations for C, CA, CB, N, HN and HA.
+        :param structure: bool, if True common second-structures are
+            included in correlations for C, CA, CB, N, HN and HA.
         :param ignoresymmetry: bool, if True gives all correlation
-        :param offdiagonal: bool, if True keeps Correlation with between the
-            same atom.
+        :param offdiagonal: bool, if True keeps Correlation with
+            between the same atom.
         :return: [correlation, ...]
         """
         assert isinstance(cs_exp, CSExperiment)
@@ -223,11 +225,12 @@ class ProteinSeq(object):
 
 class Experiment(object):
     """
-    Base class for defining NMR experiment(s). nuclei, symmetric and diagonal
-    are the only experimental attributes defined, any other attributes/
-    methods should be defined in derived classes.
+    Base class for defining NMR experiment(s). nuclei, symmetric and
+    diagonal are the only experimental attributes defined, any other
+    attributes methods should be defined in derived classes.
 
-    :param nuclei: tuple of str, example ('C', 'N') for carbon-nitrogen exp.
+    :param nuclei: tuple of str, example ('C', 'N') for a
+        carbon-nitrogen exp.
     :param symmetric: bool, True if spectrum is symmetric
     :param diagonal: bool, True if the experiment have a diagonal
     """

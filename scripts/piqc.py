@@ -19,8 +19,9 @@ Warning
 -------
 By default this code will try to use all available cores. To calculate the
 chemical shift types for all atom in all the residues it takes about 2 hours.
-It takes an additional ~ to analyse the chemical shift distributions of several
-thousand proteins. Calculation times on on a 6-Core 3.5 GHz Xeon E5 Mac Pro.
+It takes an additional hour to analyze the chemical shift distributions of
+several thousand proteins. Calculation times on on a 6-Core 3.5 GHz Xeon E5
+Mac Pro.
 
 References
 ----------
@@ -120,7 +121,7 @@ def calc_seq_cs(pacsy_db, cs_stats, key_ids, verbose=True):
     """
     Given a PACSY database connection, a list of key_ids, and a dictionary
     with chemicals shift statistics for the 20 canonical amino acid
-    this function analyzes each protien and groupd the statistics into a
+    this function analyzes each protien and groups the statistics into a
     returned dictionary.
     :param key_ids: list of pacsy key_ids
     :param cs_stats: from calc_cs_stats
@@ -174,7 +175,7 @@ def calc_seq_cs(pacsy_db, cs_stats, key_ids, verbose=True):
                         break
 
                 if num < 50:
-                    # This data has no has a very small distribution.
+                    # This data had  a very small distribution or none.
                     raise ValueError
 
                 x_grid = np.linspace(mincs, maxcs, num)

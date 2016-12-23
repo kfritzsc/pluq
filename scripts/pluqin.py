@@ -5,20 +5,22 @@
 PLUQin
 ======
 
-A program to help assign protein chemical shifts peaks. Especially helpful for
-assigning chemical shift correlations in a 2D plane. The data used by this
-program comes from the PIQC [1] analysis of the PACSY/BMRB [2] database.
+A program to help assign protein chemical shift peaks. Especially
+helpful for assigning chemical shift correlations in a 2D plane. The
+data used by this program comes from the PIQC [1] analysis of the
+PACSY/BMRB [2] database.
 
-All possible intra-residue chemical shift assignments within a given confidence
-level are provided. The possible assignments are ranked by likelihood using
-probability density functions determined with non-parametric methods. If
-desired you can truncate the assignment at a certain likelihood. If you are
-worried about miss-grouping peaks, keep the cut-off value negative, this
-returns all possibilities for each resonance even if some options are missing
-peaks and can not be assigned. The program also provides secondary structure
-(H:C:E probability). The probabilities will be adjusted based on the sequence
-if it is provided, by default the probabilities are adjusted to the average
-amino-acid frequencies.
+All possible intra-residue chemical shift assignments within a given
+confidence level are provided. The possible assignments are ranked by
+likelihood using probability density functions determined with
+non-parametric methods. If desired you can truncate the assignment at
+a certain likelihood. If you are worried about miss-grouping peaks,
+keep the cut-off value negative, this returns all possibilities for
+each resonance even if some options are missing peaks and can not be
+assigned. The program also provides secondary structure (H:C:E
+probability). The probabilities will be adjusted based on the
+sequence if it is provided, by default the probabilities are adjusted
+to the average amino-acid frequencies.
 
 Experiments
 ------------
@@ -29,33 +31,36 @@ Experiments
 - 1D Nitrogen: n
 - 1D Proton: h
 
-If you know a little python it is pretty easy to add new experiments but you
-will need the full version of the PACSY database with the PIQC tables. See
-'utility/build_exp_pdf.py' for an example.
+If you know a little python it is pretty easy to add new experiments
+but you will need the full version of the PACSY database with the
+PIQC tables. See'utility/build_exp_pdf.py' for an example.
 
 Warning
 --------
-No Database Chemical Shifts for: Trp-(CD2)-All, Trp-(CG)-All Glu-(HE2)-All,
-Asp-(HD2)-All, Lys-(HZ1)-All, Pro-(H2)-All, Pro-(H3)-All, Tyr-(HH)-All,
-Asp-(CB,CG)-Sheet, Asp-(CG,CB)-Sheet, His-(CG,CB)-Coil, Trp-(CZ2,CE2)-All,
-Trp-(CD2,CE3)-All, Trp-(CB,CG)-Helix, Trp-(CB,CG)-Coil, Trp-(CG,CB)-Helix,
-Trp-(CG,CB)-Coil, Trp-(CE3,CD2)-All, Trp-(CE2,CZ2)-All, Tyr-(CB,CG)-Coil
-Tyr-(CG,CB)-Coil, Lys-(CE,NZ)-All, Pro-(CA,N)-Coil, Pro-(CD,N)-Helix
-Pro-(CD,N)-Sheet, Thr-(CA,N)-Helix
+No Database Chemical Shifts for: Trp-(CD2)-All, Trp-(CG)-All
+Glu-(HE2)-All, Asp-(HD2)-All, Lys-(HZ1)-All, Pro-(H2)-All,
+Pro-(H3)-All, Tyr-(HH)-All, Asp-(CB,CG)-Sheet, Asp-(CG,CB)-Sheet,
+His-(CG,CB)-Coil, Trp-(CZ2,CE2)-All, Trp-(CD2,CE3)-All,
+Trp-(CB,CG)-Helix, Trp-(CB,CG)-Coil, Trp-(CG,CB)-Helix,
+Trp-(CG,CB)-Coil, Trp-(CE3,CD2)-All, Trp-(CE2,CZ2)-All,
+Tyr-(CB,CG)-Coil Tyr-(CG,CB)-Coil, Lys-(CE,NZ)-All, Pro-(CA,N)-Coil,
+Pro-(CD,N)-Helix, Pro-(CD,N)-Sheet, Thr-(CA,N)-Helix
 
 References
 ----------
 
-1. K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally Selective
-   Multidimensional Chemical Shift Ranges in Proteins from a PACSY Database
-   Purged Using Intrinsic Quality Criteria " J. Biomol. NMR 2016
-   doi:10.1007/s10858-016-0013-5
+1. K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally
+    Selective Multidimensional Chemical Shift Ranges in Proteins from
+    a PACSY Database Purged Using Intrinsic Quality Criteria " J.
+    Biomol. NMR 2016b doi:10.1007/s10858-016-0013-5
 
-2. Lee, W.; Yu, W.; Kim, S.; Chang, I.; Lee, W. PACSY, a Relational Database
-   Management System for Protein Structure and Chemical Shift Analysis. J
-   Biomol NMR 2012, 54 (2),169–179. doi: 10.1007/s10858-012-9660-3
+2. Lee, W.; Yu, W.; Kim, S.; Chang, I.; Lee, W. PACSY, a Relational
+    Database Management System for Protein Structure and Chemical
+    Shift Analysis. J Biomol NMR 2012, 54 (2),169–179.
+    doi: 10.1007/s10858-012-9660-3
 
-Please kindly cite the two references if use of this code leads to publication.
+Please kindly cite the two references if use of this code leads to
+publication.
 """
 import collections
 from collections import namedtuple
@@ -69,7 +74,8 @@ from shapely.geometry import Point
 
 __version__ = '0.2.1.0'
 
-Assignment = namedtuple('Assignment', ['res', 'atoms', 'scores', 'ss_scores'],
+Assignment = namedtuple('Assignment', ['res', 'atoms', 'scores',
+                                       'ss_scores'],
                         verbose=False)
 Assignment.__new__.__defaults__ = (None,) * len(Assignment._fields)
 
@@ -77,13 +83,14 @@ Assignment.__new__.__defaults__ = (None,) * len(Assignment._fields)
 # TODO Assignment and AssignmentLine can and should be joined.
 class AssignmentLine(object):
     """
-    Little container class for holding assignment and assignment scores.
+    Little container class for holding assignment and assignment
+    scores.
 
     :param aa: 1-letter code amino acid
     :param atoms: tuple of BMRB atom names
     :param scores: list of scores, 1 score for each atom in atoms
-    :param ss_scores: list of tuple of scores, 1 tuple of length 3 for each
-                      atom in atoms
+    :param ss_scores: list of tuple of scores, 1 tuple of length 3
+        for each atom in atoms
     """
     def __init__(self, aa, atoms, scores, ss_scores):
         self.aa = aa
@@ -109,7 +116,8 @@ class AssignmentLine(object):
     @property
     def ss_prob(self):
         """
-        Returns the product of non zero scores converted to probabilities.
+        Returns the product of non zero scores converted to
+        probabilities.
         """
         ss_scores = self.ss_scores
         ss_scores = ss_scores[~np.isnan(ss_scores).any(axis=1)]
@@ -141,18 +149,21 @@ class AssignmentLine(object):
         return ', '.join(self.list)
 
 
-def get_resonance_choices(resonance, correlations, experiment_name, level=95):
+def get_resonance_choices(resonance, correlations, experiment_name,
+                          level=95):
     """
-    Determine which chemical shift ranges at the given confidence level for an
-    experiment contain the input resonance. If so adds the matching correlation
-    to a dictionary and scores the resonance against the probability density
-    functions. The correlation are sorted by there amino acid in the
-    dictionary.
+    Determine which chemical shift ranges at the given confidence
+    level for an experiment contain the input resonance. If so adds
+    the matching correlation to a dictionary and scores the resonance
+    against the probability density functions. The correlation are
+    sorted by there amino acid in the dictionary.
 
     :param resonance: float or list of float chemical shifts.
     :param correlations: list of pluq.base.Correlation
-    :param experiment_name: one of the key from inbase.standard_experiments
-    :param level: int, one of the defined levels normally in [68, 85, 95]
+    :param experiment_name: one of the key from
+        inbase.standard_experiments
+    :param level: int, one of the defined levels normally in
+        [68, 85, 95]
     :return dict[res] = list(Assignment, ...)
     """
 
@@ -162,7 +173,7 @@ def get_resonance_choices(resonance, correlations, experiment_name, level=95):
     try:
         ind = levels.index(level)
     except ValueError:
-        mesg = 'You must chose a confidence level from {}'.format(levels)
+        mesg = 'Chose a confidence level from {}'.format(levels)
         raise ValueError(mesg)
 
     # Find all the hits
@@ -211,7 +222,8 @@ def get_resonance_choices(resonance, correlations, experiment_name, level=95):
                 ss_scores = None
                 break
 
-        assign = Assignment(corr.aa, corr.atoms, corr_score, ss_scores)
+        assign = Assignment(corr.aa, corr.atoms, corr_score,
+                            ss_scores)
         assignments[corr.aa].append(assign)
     return assignments
 
@@ -220,18 +232,23 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
          frequency=True):
     """
     PLUQin: returns a table of possible intra-residue assignments
-    and there likelihoods based on input chemical shifts and optionally the
-    sequence. They are sorted first by the assignment joint probability and
-    then by the sum of the individual probabilities.
+    and there likelihoods based on input chemical shifts and
+    optionally the sequence. They are sorted first by the assignment
+    joint probability and then by the sum of the individual
+    probabilities.
 
-    :param resonance_set: list or a list of lists of chemical shifts floats
-    :param experiment_name: one of the keys from inbase.standard_experiments
+    :param resonance_set: list or a list of lists of chemical shifts
+        floats
+    :param experiment_name: one of the keys from
+        inbase.standard_experiments
     :param seq: protein sequence 1-letter amino-acid codes
-    :type seq: iterable or None, defualt is the 20 standard amino-acids
-    :param level: int, one of the defined levels normally in [68, 85, 95]
-    :param frequency: If true accounts for the frequency of amino acids in
-        the sequence. If no sequence it used the average amino acid
-        frequencies.
+    :type seq: iterable or None, defualt is the 20 standard
+        amino-acids
+    :param level: int, one of the defined levels normally in
+        [68, 85, 95]
+    :param frequency: If true accounts for the frequency of amino
+        acids in the sequence. If no sequence it used the average
+        amino acid frequencies.
     :returns: list of AssignmentLine.list
     """
     try:
@@ -247,7 +264,7 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
         peak_dims = 1
 
     if exp.dims != peak_dims:
-        mesg = 'The peak dims does not equal the dims of the experiment!'
+        mesg = 'The peak dims in not equal to the experiment!'
         raise ValueError(mesg)
 
     # Build a list of possible assignments
@@ -310,17 +327,18 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
 
     # Compare scores with one another to get probabilities
     rows = [x.list for x in assignment_lines]
-    columns = zip(*rows)
+    columns = list(zip(*rows))
 
     if not columns:
         return None
 
-    for k in xrange(n+1, n*2+1+1):
+    for k in list(range(n+1, n*2+1+1)):
         scores = np.array(columns[k])
 
         # get the amino acid fractions
         if frequency:
-            aa_scale = np.array([protein.aa_fractions[x] for x in columns[0]])
+            aa_scale = np.array([protein.aa_fractions[x] for x in
+                                 columns[0]])
             aa_scale = aa_scale / aa_scale.sum()
             scores = scores * aa_scale
 
@@ -334,9 +352,10 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
 
     # Sort the assignment by the joint and then sum of probabilities
     order_scores = [columns[-4],
-                    list(np.sum(np.array(columns[n+1:n*2+1]), axis=0))]
+                    list(np.sum(np.array(columns[n+1:n*2+1]),
+                                axis=0))]
     ind = np.lexsort((order_scores[1], order_scores[0]))[::-1]
-    rows = [zip(*columns)[x] for x in ind]
+    rows = [list(zip(*columns))[x] for x in ind]
 
     return rows
 
@@ -346,21 +365,22 @@ if __name__ == "__main__":
 
     # Set up command line options.
     parser = argparse.ArgumentParser(
-        description="""PLUQin: returns a table of possible intra-residue
-        assignments and there likelihoods based on input chemical shifts and
-        optionally the sequence. They are sorted first by the assignment joint
-        probability and then by the sum of the individual probabilities.""",
+        description="""PLUQin: returns a table of possible
+        intra-residue assignments and there likelihoods based on
+        input chemical shifts and optionally the sequence. They are
+        sorted first by the assignment joint probability and then by
+        the sum of the individual probabilities.""",
 
-        epilog=""" Fritzsching, Hong, Schmidt-Rohr. J. Biomol. NMR 2016
-        doi:10.1007/s10858-016-0013-5""")
+        epilog=""" Fritzsching, Hong, Schmidt-Rohr. J. Biomol. NMR
+        2016 doi:10.1007/s10858-016-0013-5""")
 
     parser.add_argument(
         "-p", "--peak",
         action='append',
         type=float,
         nargs='+',
-        help="""Chemical shifts, examples: -p 55 -p 18 (if exp_name is 1D)
-                -p 55 18 (if exp_name is 2D.""")
+        help="""Chemical shifts, examples: -p 55 -p 18 (if exp_name
+        is 1D) -p 55 18 (if exp_name is 2D.""")
 
     parser.add_argument(
         "-e", "--exp_name",
@@ -373,7 +393,8 @@ if __name__ == "__main__":
         action="store",
         type=float,
         default=-1,
-        help="Cut off %% value, input a negative number for everything.")
+        help="""Cut off %% value, input a negative number for
+        everything.""")
 
     parser.add_argument(
         "-s", "--seq",
@@ -404,16 +425,17 @@ if __name__ == "__main__":
 
     else:
         n = len(cs_set)
-        header = ['AA'] + ['p{}'.format(x+1) for x in xrange(n)]*2
+        header = ['AA'] + ['p{}'.format(x+1) for x in range(n)]*2
         header += ['Joint', 'H', 'C', 'E']
-        table.insert(0, header)
         cols = [list(x) for x in zip(*table)]
         col_widths = [max(map(len, map(str, x))) for x in cols]
-        fmt = '  '.join(['{{:<{}}}'.format(width) for width in col_widths])
+        fmt = '  '.join(['{{:<{}}}'.format(width) for width in
+                         col_widths])
 
+        print(fmt.format(*header))
         for line in table:
 
             if line[-4] <= cut_off:
                 break
-            line = [x if x else '-' for x in line]
+            line = map(str, [x if x else '-' for x in line])
             print(fmt.format(*line))
