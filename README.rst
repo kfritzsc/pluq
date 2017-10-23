@@ -2,8 +2,37 @@
 pluq
 ====
 
-Python tools for analyzing the PACSY NMR chemical shift database of
-proteins.
+Python tools for analyzing the PACSY NMR chemical shift database and assigning
+chemical shifts
+
+
+### Step 1.a: Install Python 2.7+ or Python 3.4+###
+
+If you have python installed go to Step 1. It is a bad idea to use
+your default system python. On a Mac you can install python 2.7 from
+homebrew using the these directions. If not on a Mac we suggest you
+look at: http://docs.python-guide.org/en/latest/
+
+::
+    bash
+    /usr/bin/ruby -e "$(curl -fsSL
+    https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    brew install python3
+
+
+### Step 1.b: Install two c-libraries  GEOS and GDAL required by Shapely and Fiona ###
+::
+    brew install geos
+    brew install gdal
+
+
+Step 2: Install Python dependencies and pluq
+--------------------------------------------
+::
+    cd pluq
+    pip3 install -r requirements.txt
+    python3 setup.py install
+
 
 References
 ----------
