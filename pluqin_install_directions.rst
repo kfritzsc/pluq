@@ -1,4 +1,4 @@
-Step 0: Install Python 2.7
+Step 0: Install Python 2.7+
 --------------------------
 If you have python installed go to Step 1. It is a bad idea to use
 your default system python. On a Mac you can install python 2.7 from
@@ -22,6 +22,9 @@ suggested that you work in a virtual environment.
 Step 1.b: Activate virtualenv
 -----------------------------
 cd <to/directory/where/pluq/is>
+
+TODO: How to install bew install GEOS.
+TODO: How to install brew install gdal
 
 ::
     mkdir pluq_env
