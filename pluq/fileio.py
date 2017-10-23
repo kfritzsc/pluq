@@ -15,6 +15,7 @@ from pluq.base import Correlation
 
 pdffile_exptype = {'cc': 'cc_pdf_all.h5',
                    'cn': 'cn_pdf_all.h5',
+                   'ch': 'ch_pdf_all.h5',
                    'c': 'c_pdf_all.h5',
                    'n': 'n_pdf_all.h5',
                    'h': 'h_pdf_all.h5'}

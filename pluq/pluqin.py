@@ -182,7 +182,7 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
     :type seq: iterable or None, defualt is the 20 standard
         amino-acids
     :param level: int, one of the defined levels normally in
-        [68, 85, 95]
+        {68, 85, 95}
     :param frequency: If true accounts for the frequency of amino
         acids in the sequence. If no sequence it used the average
         amino acid frequencies.
@@ -227,7 +227,7 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
 
         # Regroup and fill in placeholder  nulls
         rows = []
-        # TODO: should append None, but it break collections.product
+        # TODO: should append None, but it breaks collections.product
         for assign in res_assignments:
             if not assign:
                 rows.append('-')
@@ -289,8 +289,7 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
 
     # Sort the assignment by the joint and then sum of probabilities
     order_scores = [columns[-4],
-                    list(np.sum(np.array(columns[n+1:n*2+1]),
-                                axis=0))]
+                    list(np.sum(np.array(columns[n+1:n*2+1]),axis=0))]
     ind = np.lexsort((order_scores[1], order_scores[0]))[::-1]
     rows = [list(zip(*columns))[x] for x in ind]
 

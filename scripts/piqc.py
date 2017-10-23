@@ -7,35 +7,37 @@ PIQC
 
 Purging by Intrinsic Quality Criteria
 -------------------------------------
-Used to identify mis-referenced and otherwise comprised protein chemical shift
-data sets from the PACSY database.
+Used to identify mis-referenced and otherwise comprised protein
+chemical shift data sets from the PACSY database.
 
-This script runs the PIQC (Purging by Intrinsic Quality Criteria) analysis as
-outlined in Fritzsching et. al. 2016 [1] on a pre-made PACSY database [2].
-Does not overwrite the PACSY database but rather performs analysis and outputs
-2 new tables.
+This script runs the PIQC (Purging by Intrinsic Quality Criteria)
+analysis as outlined in Fritzsching et. al. 2016 [1] on a pre-made
+PACSY database [2]. Does not overwrite the PACSY database but rather
+performs analysis and outputs 2 new tables.
 
 Warning
 -------
-By default this code will try to use all available cores. To calculate the
-chemical shift types for all atom in all the residues it takes about 2 hours.
-It takes an additional hour to analyze the chemical shift distributions of
-several thousand proteins. Calculation times on on a 6-Core 3.5 GHz Xeon E5
-Mac Pro.
+By default this code will try to use all available cores. To c
+alculate the chemical shift types for all atom in all the residues it
+takes about 2 hours. It takes an additional hour to analyze the
+chemical shift distributions of several thousand proteins.
+Calculation times on on a 6-Core 3.5 GHz Xeon E5 Mac Pro.
 
 References
 ----------
 
-1. K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally Selective
-   Multidimensional Chemical Shift Ranges in Proteins from a PACSY Database
-   Purged Using Intrinsic Quality Criteria " J. Biomol. NMR 2016
-   doi:10.1007/s10858-016-0013-5
+1. K. J. Fritzsching, Mei Hong,  K. Schmidt-Rohr. "Conformationally
+   Selective Multidimensional Chemical Shift Ranges in Proteins from
+   a PACSY Database Purged Using Intrinsic Quality Criteria " J.
+   Biomol. NMR 2016 doi:10.1007/s10858-016-0013-5
 
-2. Lee, W.; Yu, W.; Kim, S.; Chang, I.; Lee, W. PACSY, a Relational Database
-   Management System for Protein Structure and Chemical Shift Analysis. J
-   Biomol NMR 2012, 54 (2),169–179. doi: 10.1007/s10858-012-9660-3
+2. Lee, W.; Yu, W.; Kim, S.; Chang, I.; Lee, W. PACSY, a Relational
+   Database Management System for Protein Structure and Chemical
+   Shift Analysis. J Biomol NMR 2012, 54 (2),169–179.
+   doi: 10.1007/s10858-012-9660-3
 
-Please kindly cite the two references if use of this code leads to publication.
+Please kindly cite the two references if use of this code leads to
+publication.
 """
 
 import time
@@ -53,12 +55,13 @@ from pluq.dbtools import DBMySQL, PacsyCorrelation, PacsyProtein
 
 def calc_cs_stats(pacsy_database, verbose=True):
     """
-    Given a PACSY database connection, this function analyzes the chemical
-    shifts for all the H, C, N atom of the 20 canonical amino acid residues in
-    Helix, Sheet Coil and Turn secondary structures and groups the data into a
-    Python dictionary.
+    Given a PACSY database connection, this function analyzes the
+    chemical shifts for all the H, C, N atom of the 20 canonical
+    amino acid residues in Helix, Sheet Coil and Turn secondary
+    structures and groups the data into a Python dictionary.
 
-    :param pacsy_database: pacsy database connection pluq.dbtools.DBMySQL
+    :param pacsy_database: pacsy database connection
+        pluq.dbtools.DBMySQL
     :param verbose: print out progress to the screen
     :return: cs_stats dictionary, no_good list
     """
@@ -119,13 +122,15 @@ def calc_cs_stats(pacsy_database, verbose=True):
 
 def calc_seq_cs(pacsy_db, cs_stats, key_ids, verbose=True):
     """
-    Given a PACSY database connection, a list of key_ids, and a dictionary
-    with chemicals shift statistics for the 20 canonical amino acid
-    this function analyzes each protien and groups the statistics into a
-    returned dictionary.
+    Given a PACSY database connection, a list of key_ids, and a
+    dictionary with chemicals shift statistics for the 20 canonical
+    amino acid this function analyzes each protien and groups the
+    statistics into a returned dictionary.
+    :param pacsy_db: pacsy database connection
     :param key_ids: list of pacsy key_ids
     :param cs_stats: from calc_cs_stats
-    :param pacsy_database: pacsy database connection pluq.dbtools.DBMySQL
+    :param pacsy_database: pacsy database connection
+        pluq.dbtools.DBMySQL
     :param verbose: print out progress to the screen
     :return: cs_stats dictionary, no_good list
     """
@@ -146,7 +151,8 @@ def calc_seq_cs(pacsy_db, cs_stats, key_ids, verbose=True):
         pacsy_protein = PacsyProtein(protein_id, pacsy_db)
         cs_data = pacsy_protein.cs_data()
 
-        # Sort the data by nucleus type and find the difference from ideal.
+        # Sort the data by nucleus type and find the difference from
+        # ideal.
         for element in ['C', 'N', 'H']:
             cs = [x for x in cs_data if x[0].atoms[0] == element]
 
@@ -175,12 +181,14 @@ def calc_seq_cs(pacsy_db, cs_stats, key_ids, verbose=True):
                         break
 
                 if num < 50:
-                    # This data had  a very small distribution or none.
+                    # This data had  a very small distribution or
+                    # none.
                     raise ValueError
 
                 x_grid = np.linspace(mincs, maxcs, num)
 
-                smooth = estimate_pdf(deltas,  grid=x_grid, bandwidth='cv',
+                smooth = estimate_pdf(deltas,  grid=x_grid,
+                                      bandwidth='cv',
                                       params=params, cv=10)
             except ValueError:
                 protein_no_data.append((key_id, element))
@@ -204,7 +212,8 @@ def calc_seq_cs(pacsy_db, cs_stats, key_ids, verbose=True):
 
             if verbose:
                 progress = 'Finished Key ID {} - {},\
-                Progress: {} | {}'.format(key_id, element, n+1, total)
+                    Progress: {} | {}'.format(key_id, element, n+1,
+                                              total)
                 sys.stdout.write('\r')
                 sys.stdout.write(progress)
                 sys.stdout.flush()
@@ -224,7 +233,8 @@ def _dd():
 
 def _build_correlation_list():
     """
-    Little utility function to make a list of all the needed correlation.
+    Little utility function to make a list of all the needed
+    correlation.
     """
 
     correlation_list = []
@@ -250,8 +260,10 @@ def _build_correlation_list():
 
 def _calc_cs_offset_array(cs, cs_stats):
     """
-    :param cs: tuple(atom type -- Correlation, chemical shift -- float)
-    :param cs_stats: chemcial shift statistics dict from analyse_cs_data
+    :param cs: tuple(atom type -- Correlation, chemical shift --
+       float)
+    :param cs_stats: chemcial shift statistics dict from
+       analyse_cs_data
     :return: list of of chemical shift offsets
     """
     deltas = []
@@ -269,9 +281,10 @@ def _calc_cs_offset_array(cs, cs_stats):
         # Compare the found chemical shift to the expected
         delta = cs - expected_cs
 
-        # There must be a few improperly formatted float in the database?
+        # There must be a few improperly formatted float in the
+        # database?
         if np.isnan(delta):
-            mesg = 'One of the chemical shifts given was not a number.'
+            mesg = 'One of the shifts given was not a number.'
             print(mesg)
             continue
 
@@ -283,11 +296,11 @@ def _calc_cs_offset_array(cs, cs_stats):
 def main(pacsy_db, key_ids=None, cs_stats_file=None,
          seq_cs_file='SEQ_CS_DB.txt', verbose=True):
     """
-    Runs the PIQC analysis on a PACSY database, and outputs up to two tables in
-    two separate csv files. The first table 'CS_STATS_DB.txt' has chemical
-    shift statistics for all the atom types (with data is the database). The
-    second table 'seq_offsets' has statistics on the chemical shift offset for
-    proteins.
+    Runs the PIQC analysis on a PACSY database, and outputs up to two
+    tables in two separate csv files. The first table
+    'CS_STATS_DB.txt' has chemical shift statistics for all the atom
+    types (with data is the database). The second table 'seq_offsets'
+    has statistics on the chemical shift offset for proteins.
     """
 
     # Step 1: Get all the chemical shift statistics.
@@ -299,7 +312,7 @@ def main(pacsy_db, key_ids=None, cs_stats_file=None,
         if verbose:
             # The following correlation are not in the database:
             if bad_correlations:
-                print('The following correlation are not in the database: ')
+                print('These correlation are not in the database: ')
                 for bad_correlation in bad_correlations:
                     print(bad_correlation)
 
@@ -310,7 +323,8 @@ def main(pacsy_db, key_ids=None, cs_stats_file=None,
         # read cs stats from fie
         cs_stats = pluq.fileio.read_cs_stats(cs_stats_file)
 
-    # Step 2: For every protein compare chemical shifts to the expected mode.
+    # Step 2: For every protein compare chemical shifts to the
+    # expected mode.
     if not key_ids:
         key_ids = pacsy_db.query('SELECT KEY_ID from seq_db')
         key_ids = [int(x[0]) for x in key_ids]

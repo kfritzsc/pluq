@@ -10,15 +10,20 @@ from pluq.base import Correlation, ProteinSeq
 
 try:
     import MySQLdb
+
 except:
-    raise ImportError('You need to have MySQLdb-Python installed!')
+    try:
+        import mysqlclient as MySQLdb
+    except:
+        msg= 'MySQLdb-Python or mysqlclient must be installed!'
+        raise ImportError(msg)
 
 
 class DBMySQL(object):
     """
-    Small "wrapper class" for working with MySQLdb. Especially useful if
-    multiple database connections must be open at the same time. All operation
-    are wrapped in exceptions.
+    Small "wrapper class" for working with MySQLdb. Especially useful
+    if multiple database connections must be open at the same time.
+    All operation are wrapped in exceptions.
 
     :param host: hostname like 'localhost'
     :param user: username like 'root'
@@ -37,9 +42,9 @@ class DBMySQL(object):
             self.db = db
         except MySQLdb.Error as e:
             try:
-                print "MySQL Error {}: {}".format(e.args[0], e.args[1])
+                print("MySQL Error {}: {}".format(e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: {}".format(str(e))
+                print("MySQL Error: {}".format(str(e)))
 
     def query(self, query, dict_cursor=False):
         """Query the database and return.
@@ -57,9 +62,9 @@ class DBMySQL(object):
         except MySQLdb.Error as e:
             self.connection.rollback()
             try:
-                print "MySQL Error {}: {}".format(e.args[0], e.args[1])
+                print("MySQL Error {}: {}".format(e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: {}".format(str(e))
+                print("MySQL Error: {}".format(str(e)))
 
     def insert(self, query):
         """Use query to insert and the commit to the database.
@@ -72,9 +77,9 @@ class DBMySQL(object):
         except MySQLdb.Error as e:
             self.connection.rollback()
             try:
-                print "MySQL Error {}: {}".format(e.args[0], e.args[1])
+                print("MySQL Error {}: {}".format(e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: {}".format(str(e))
+                print("MySQL Error: {}".format(str(e)))
 
     def table_exist(self, name):
         """ Returns True if the database contains a table with the given name.
@@ -97,9 +102,9 @@ class DBMySQL(object):
         except MySQLdb.Error as e:
             self.connection.rollback()
             try:
-                print "MySQL Error {}: {}".format(e.args[0], e.args[1])
+                print("MySQL Error {}: {}".format(e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: {}".format(str(e))
+                print("MySQL Error: {}".format(str(e)))
 
     def bulk_inset(self, query):
         """
@@ -114,9 +119,9 @@ class DBMySQL(object):
         except MySQLdb.Error as e:
             self.connection.rollback()
             try:
-                print "MySQL Error {}: {}".format(e.args[0], e.args[1])
+                print("MySQL Error {}: {}".format(e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: {}".format(str(e))
+                print("MySQL Error: {}".format(str(e)))
 
     def commit(self):
         """ Commit the data to the database"""
@@ -125,9 +130,9 @@ class DBMySQL(object):
         except MySQLdb.Error as e:
             self.connection.rollback()
             try:
-                print "MySQL Error {}: {}".format(e.args[0], e.args[1])
+                print("MySQL Error {}: {}".format(e.args[0], e.args[1]))
             except IndexError:
-                print "MySQL Error: {}".format(str(e))
+                print("MySQL Error: {}".format(str(e)))
 
     def __del__(self):
         self.connection.close()
@@ -234,11 +239,11 @@ class PacsyCorrelation(object):
         # Build SQL query
         # Select Chemical Shifts From Sub Table(s)
         cs = 'cs_{0}.C_SHIFT as cs{0}'
-        sql = [("SELECT " + ', '.join([cs.format(x) for x in xrange(n)])),
+        sql = [("SELECT " + ', '.join([cs.format(x) for x in range(n)])),
                "FROM {0}_cs_db as cs_0".format(aa)]
 
         # Join other sub table for chemical shift.
-        for ni in xrange(1, n):
+        for ni in range(1, n):
             sql.append("INNER JOIN {0}_cs_db AS cs_{1} ".format(aa, ni))
             sql.append("ON cs_0.KEY_ID = cs_{0}.KEY_ID".format(ni))
 
@@ -281,7 +286,7 @@ class PacsyCorrelation(object):
             sql.append("BETWEEN {0} AND {1}".format(limits_0))
 
         # Atoms and Limits for rest of the atom
-        for ni in list(xrange(1, n)):
+        for ni in list(range(1, n)):
             sql.append("AND cs_{0}.ATOM_NAME = '{1}'".format(
                 ni, self.correlation.atoms[ni]))
 

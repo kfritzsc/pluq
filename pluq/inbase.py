@@ -263,7 +263,7 @@ def silverman(data):
 
     (4*sigma^5/3*n)^(1/5)
     """
-    return np.min((4*np.std(data, axis=0)**5.0 / (3 * len(data)))**(1/5.0))
+    return np.min((4*np.std(data)**5.0 / (3 * len(data)))**(1/5.0))
 
 
 def make_grid(limits, bandwidth, bandwidth_sample=1):
@@ -331,9 +331,10 @@ def make_pdf(exp, pacsy, file_name, seq=None, confidence_levels=[68, 80, 95],
             if exp.dims == 1:
                 smooth = estimate_pdf(data, bandwidth='silverman')
             else:
-                smooth = estimate_pdf(
-                    data, bandwidth=None,
-                    params={'bandwidth': np.linspace(0.4, 1.5, 15)})
+                smooth = estimate_pdf(data, bandwidth='silverman')
+                # smooth = estimate_pdf(
+                #     data, bandwidth=None,
+                #     params={'bandwidth': np.linspace(0.4, 1.5, 15)})
         except:
             catch.append(corrs)
             continue
@@ -400,6 +401,9 @@ def make_region(exp_type, file_name, corrs, verbose=True):
     :param corrs: [Correlation, ...]
     :param verbose: if True, prints list of failures
     """
+    schema = {'geometry': 'Polygon',
+              'properties': {'corr': 'str',
+                             'levels': 'float', }}
 
     pdf_dict = read_pdf(exp_type)
 
@@ -413,28 +417,25 @@ def make_region(exp_type, file_name, corrs, verbose=True):
         for corr in corrs:
             try:
                 smooth = get_pdf(corr, pdf_dict)
+
+                for n, percentile in enumerate([68, 80, 95]):
+                    try:
+                        regions = _region(smooth, smooth.levels[n])
+                    except ValueError:
+                        if verbose:
+                            print(corr)
+                        break
+
+                    for region in regions:
+                        # Add the Polygon to the shape_file.
+                        shp.write({'geometry': mapping(region),
+                                   'properties':
+                                       {'corr': str(corr),
+                                        'levels': percentile}})
+
             except KeyError:
                 if verbose:
                     print(corr)
-
-
-
-            for n , percentile in enumerate([68, 80, 95]):
-
-                try:
-                    regions = _region(smooth, smooth.levels[n])
-                except ValueError:
-                    if verbose:
-                        print(corr)
-                    break
-
-
-                for region in regions:
-                    # Add the Polygon to the shape_file.
-                    shp.write({'geometry': mapping(region),
-                               'properties':
-                                   {'corr': str(corr),
-                                    'levels': percentile}})
 
 
 def _region(smooth, level):
