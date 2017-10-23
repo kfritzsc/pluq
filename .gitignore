@@ -3,8 +3,8 @@
 /*.egg-info
 *.pyc
 
-pluq/data/pdf/*
-pluq/data/regions/*
+#pluq/data/pdf/*
+#pluq/data/regions/*
 
 # Setuptools distribution folder.
 dist/
