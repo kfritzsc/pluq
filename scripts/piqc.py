@@ -36,7 +36,7 @@ References
    Shift Analysis. J Biomol NMR 2012, 54 (2),169–179.
    doi: 10.1007/s10858-012-9660-3
 
-Please kindly cite the two references if use of this code leads to
+Please kindly cite the two references if use of this code helps lead to
 publication.
 """
 

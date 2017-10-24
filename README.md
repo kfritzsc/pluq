@@ -31,14 +31,20 @@ To install the requirements on a Mac you can use [Homebrew](https://brew.sh):
     brew install gdal
 ```
 
-You can also satisfy the requirements using the python packages from [Anaconda](https://anaconda.org/anaconda/python).
+You can also satisfy the requirements using the python packages from 
+[Anaconda](https://anaconda.org/anaconda/python).
 
 
 ### Optional Requirements
 
-To use the chemical shift assignment program  `pluqin` discussed in Ref. [1] you do not need to install the whole PACSY database.  
+To use the chemical shift assignment program  `pluqin` discussed in Ref. [1] 
+you do not need to install the whole PACSY database.  
 
-If however you would like to run `piqc` or use `pluq` to make PACSY database queries, etc. you will need to have `MySQL` installed (or another SQL database server system). You will also need to download the data from the [PACSY website](http://pacsy.nmrfam.wisc.edu). See `pluq/scripts/build_pacsy` for more information.
+If however you would like to run `piqc` or use `pluq` to make PACSY database 
+queries, etc. you will need to have `MySQL` installed (or another SQL database
+server system). You will also need to download the data from the 
+[PACSY website](http://pacsy.nmrfam.wisc.edu). See `pluq/scripts/build_pacsy`
+for more information.
 
 
 ## Install

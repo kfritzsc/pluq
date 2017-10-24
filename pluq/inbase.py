@@ -2,8 +2,6 @@
 Functionality for smoothing 1D and 2D distributions so that properties can be
 estimated. Also functions for loading and writing the various data files used
 internally.
-
-KJF 2014-17-04
 """
 
 # Import everything and the kitchen sink.

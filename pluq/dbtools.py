@@ -1,7 +1,6 @@
 """
 Classes for getting data from the PACSY database.
 
-KJF
 """
 
 import numpy as np
