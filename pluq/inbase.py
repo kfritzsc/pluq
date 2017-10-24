@@ -88,20 +88,6 @@ class Continuous(object):
         else:
             raise NotImplementedError
 
-    @property
-    def icdf(self):
-        if self.dims == 1:
-            raise NotImplementedError
-
-        else:
-            raise NotImplementedError
-
-    def random_sample(self, n=1000):
-        if self.dims == 1:
-            raise NotImplementedError
-        else:
-            raise NotImplementedError
-
     def score(self, data):
         if self.dims == 1:
             f = interp1d(self.grid, self.pdf)
@@ -395,7 +381,7 @@ def counterpart(region_shape):
 def make_region(exp_type, file_name, corrs, verbose=True):
     """
     Makes regions for correlations in given experiment type by reading hdf5
-    file data and exporting new a shapefiles.
+    file data and exporting a new shapefiles.
 
     :param exp_type: :param exp_name: experiment name str in pdffile_exptype
     :param corrs: [Correlation, ...]

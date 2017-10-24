@@ -1,7 +1,7 @@
-Fiona
+fiona
 h5py
 numpy
 scikit-learn
 scipy
-Shapely
+shapely
 matplotlib

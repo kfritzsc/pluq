@@ -178,7 +178,7 @@ class PacsyCorrelation(object):
                         str or list of str
         :param piqc: limit to proteins that are satisfy PIQC
         :param sigma_n: prune chemical shifts > sigma_n * std from the average
-        :parma like_ss: if True groups ss into similar categories
+        :param like_ss: if True groups ss into similar categories
                         see aminoacids.common_sndstr for details of grouping
         :param debug: prints out sql statement
         :return: [(cs1_1, cs2_2, ... csn_n),.. (csm_1, csm_2, ... csm_n) ]

@@ -37,8 +37,10 @@ schema = {'geometry': 'Polygon',
           'properties': {'corr': 'str',
                          'levels': 'float', }}
 
-shapefile_exptype = {'cc': os.path.join('cc_region_all', 'cc_region_all.shp'),
-                     'cn': os.path.join('cn_region_all', 'cn_region_all.shp')}
+shapefile_exptype = {'cc': os.path.join('cc_region_all',
+                                        'cc_region_all.shp'),
+                     'cn': os.path.join('cn_region_all',
+                                        'cn_region_all.shp')}
 
 
 def read_region(exp_name='cc', level=95):

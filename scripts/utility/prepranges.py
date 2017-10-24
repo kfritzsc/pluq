@@ -1,11 +1,11 @@
 """
-Main functionality is to determine chemical shift ranges and add them to an ESRI Shape
-file.
+Main functionality is to determine chemical shift ranges and add them to an
+ESRI Shape file.
 
 Important Note/ Warning:
-Depending on the options this can take a very long time to run! For many bonds, and
-all atom types it can take days (Mac Pro with 6-3.5 Ghz cores, 32 Gb RAM and a very
-fast SSD.)
+Depending on the options this can take a very long time to run! For many bonds,
+ and all atom types it can take days (Mac Pro with 6-3.5 Ghz cores, 32 Gb RAM
+and a fast SSD.)
 """
 # TODO: Set up an "argparse" interface for this script.
 # TODO: Make option to use known bandwidths.

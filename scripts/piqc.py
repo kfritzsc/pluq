@@ -17,11 +17,11 @@ performs analysis and outputs 2 new tables.
 
 Warning
 -------
-By default this code will try to use all available cores. To c
-alculate the chemical shift types for all atom in all the residues it
-takes about 2 hours. It takes an additional hour to analyze the
-chemical shift distributions of several thousand proteins.
-Calculation times on on a 6-Core 3.5 GHz Xeon E5 Mac Pro.
+By default this code will try to use all available cores.  On on a
+6-Core 3.5  GHz Xeon E5 Mac Pro. To calculate the chemical shift
+types for all atoms in all the residues it takes about 2 hours. It
+takes an additional hour to analyze the chemical shift distributions
+of several thousand proteins.
 
 References
 ----------
