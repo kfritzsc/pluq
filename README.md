@@ -2,16 +2,28 @@
 # pluq
 
 
-Python tools for analyzing the PACSY NMR chemical shift database and assigning protein chemical shifts.
+Python tools for analyzing the PACSY NMR chemical shift database and assigning 
+protein chemical shifts.
 
+The main goal of this project is to provide methods for evaluating protein 
+chemical shift data against a large database of assigned chemical shifts, 
+see Ref[1].
+
+We have performed a statistical analysis of the chemical shifts in the PACSY 
+database, Ref [2] which contains >3000 proteins with 3D structures. After 
+removal of misreferenced and misassigned data we have determined refined 
+(multidimensional) chemical shift ranges for intra-residue correlations 
+(13C–13C, 15N–13C, etc.). These chemical shift ranges can be used to gain 
+amino-acid type-assignment and/or secondary-structure information from 
+experimental NMR spectra.
 
 ## Requirements
 
-- Python 2.7+ or Python 3.4+
+- Python 3.5+ or Python 2.7+
 - GEOS
 - GDAL
 
-To install the requirements on a Mac you could use [Homebrew](https://brew.sh):
+To install the requirements on a Mac you can use [Homebrew](https://brew.sh):
 
 ```bash
     brew install python3
@@ -19,14 +31,14 @@ To install the requirements on a Mac you could use [Homebrew](https://brew.sh):
     brew install gdal
 ```
 
-You can also satisfy the requirements using the python packages from  [Anaconda](https://anaconda.org/anaconda/python).
+You can also satisfy the requirements using the python packages from [Anaconda](https://anaconda.org/anaconda/python).
 
 
-## Optional Requirements
+### Optional Requirements
 
 To use the chemical shift assignment program  `pluqin` discussed in Ref. [1] you do not need to install the whole PACSY database.  
 
-If however you would like to run `piqc` or use `pluq` to make PACSY database queries, etc. you will need to have have `MySQL` installed (or another SQL database server system). You will also need to download the data from the [PACSY website](http://pacsy.nmrfam.wisc.edu). See `pluq/scripts/build_pacsy` for more information.
+If however you would like to run `piqc` or use `pluq` to make PACSY database queries, etc. you will need to have `MySQL` installed (or another SQL database server system). You will also need to download the data from the [PACSY website](http://pacsy.nmrfam.wisc.edu). See `pluq/scripts/build_pacsy` for more information.
 
 
 ## Install
@@ -37,7 +49,7 @@ If however you would like to run `piqc` or use `pluq` to make PACSY database que
     python3 setup.py install
 ```
 
-If you would like to use `pluq` to run PACSY database queries you will need to have `MySQL` installed. If you have installed python2, you will need the package `MySQLdb`. If you have python3 installed you will need to install `mysqlclient`.
+If you would like to use `pluq` to run PACSY database queries you will need to have `MySQLdb` or `mysqlclient` installed. If you have installed Python 2.7+, you will need the package `MySQLdb`. If you have Python 3.5+ installed you will need to the package `mysqlclient`.
 
 ## References
 

@@ -15,9 +15,8 @@ for aa in aa_list:
         except:
             pass
 
-import pandas as pd
-
-df = pd.DataFrame(cs_vars, columns=['Res', 'Atom', 'Var'])
-df.to_csv('cs_vars.csv')
+# import pandas as pd
+# df = pd.DataFrame(cs_vars, columns=['Res', 'Atom', 'Var'])
+# df.to_csv('cs_vars.csv')
 
 

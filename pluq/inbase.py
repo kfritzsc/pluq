@@ -15,7 +15,7 @@ import numpy as np
 from matplotlib import _cntr as cntr
 from scipy.interpolate import interp1d, RectBivariateSpline
 from sklearn.neighbors import KernelDensity
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 
 import fiona
 from shapely import speedups
