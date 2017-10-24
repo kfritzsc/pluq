@@ -3,8 +3,9 @@
 /*.egg-info
 *.pyc
 
-#pluq/data/pdf/*
-#pluq/data/regions/*
+# Temporary
+scripts/utility/ch_region_all/*
+scripts/utility/ch_pdf_all.h5
 
 # Setuptools distribution folder.
 dist/
