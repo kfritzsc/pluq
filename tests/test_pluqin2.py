@@ -6,6 +6,7 @@ KJF 2014-21-05
 
 import unittest
 from shapely.geometry import Polygon, MultiPolygon
+from pluq.fileio import read_region
 import pluq.base as base
 from pluq.aminoacids import aa_list
 
@@ -14,7 +15,7 @@ class PLUQinRegionsCC(unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.corr_regions = base.load_2d_regions()
+        self.corr_regions = read_region()
         self.aa_list = sorted(list(aa_list))
 
     def tearDown(self):
@@ -43,45 +44,49 @@ class PLUQinRegionsCC(unittest.TestCase):
         all_corrs = res_types.relevant_correlations(CC_PDSD,
             structure=True, ignoresymmetry=False, offdiagonal=False)
 
-        all_corrs = set(all_corrs)
+        # all_corrs = set(all_corrs)
 
         # TODO: Remove Exceptions!! from 2D 2-bonds, consider "buffering" the average.
-        exceptions = {base.Correlation('H', ('CA', 'CG'), 'H'),
-                      base.Correlation('H', ('CA', 'CG'), 'C'),
-                      base.Correlation('H', ('CA', 'CG'), 'E'),
-                      base.Correlation('H', ('CB', 'CG'), 'H'),
-                      base.Correlation('H', ('CB', 'CG'), 'C'),
-                      base.Correlation('H', ('CB', 'CG'), 'E'),
-                      base.Correlation('W', ('CA', 'CG'),  'E'),
-                      base.Correlation('W', ('CA', 'CG'),  'H'),
-                      base.Correlation('W', ('CA', 'CG'),  'C'),
-                      base.Correlation('W', ('CB', 'CG'),  'E'),
-                      base.Correlation('W', ('CB', 'CG'),  'H'),
-                      base.Correlation('W', ('CB', 'CG'),  'C'),
-                      base.Correlation('W', ('CB', 'CD2'), 'C'),
-                      base.Correlation('W', ('CG', 'CE3'), 'X'),
-                      base.Correlation('W', ('CG', 'CD1'), 'X'),
-                      base.Correlation('W', ('CG', 'CD2'), 'X'),
-                      base.Correlation('W', ('CG', 'CE2'), 'X'),
-                      base.Correlation('W', ('CD1', 'CD2'), 'X'),
-                      base.Correlation('W', ('CE2', 'CD2'), 'X'),
-                      }
-
-        exceptions_conterpart = [x.counterpart() for x in exceptions]
-        exceptions = exceptions.union(exceptions_conterpart)
-
-        all_corrs = all_corrs.difference(exceptions)
+        # exceptions = {base.Correlation('H', ('CA', 'CG'), 'H'),
+        #               base.Correlation('H', ('CA', 'CG'), 'C'),
+        #               base.Correlation('H', ('CA', 'CG'), 'E'),
+        #               base.Correlation('H', ('CB', 'CG'), 'H'),
+        #               base.Correlation('H', ('CB', 'CG'), 'C'),
+        #               base.Correlation('H', ('CB', 'CG'), 'E'),
+        #               base.Correlation('W', ('CA', 'CG'),  'E'),
+        #               base.Correlation('W', ('CA', 'CG'),  'H'),
+        #               base.Correlation('W', ('CA', 'CG'),  'C'),
+        #               base.Correlation('W', ('CB', 'CG'),  'E'),
+        #               base.Correlation('W', ('CB', 'CG'),  'H'),
+        #               base.Correlation('W', ('CB', 'CG'),  'C'),
+        #               base.Correlation('W', ('CB', 'CD2'), 'C'),
+        #               base.Correlation('W', ('CG', 'CE3'), 'X'),
+        #               base.Correlation('W', ('CG', 'CD1'), 'X'),
+        #               base.Correlation('W', ('CG', 'CD2'), 'X'),
+        #               base.Correlation('W', ('CG', 'CE2'), 'X'),
+        #               base.Correlation('W', ('CD1', 'CD2'), 'X'),
+        #               base.Correlation('W', ('CE2', 'CD2'), 'X'),
+        #               }
+        #
+        # exceptions_conterpart = [x.counterpart() for x in exceptions]
+        # exceptions = exceptions.union(exceptions_conterpart)
+        # all_corrs = all_corrs.difference(exceptions)
 
         for corr in all_corrs:
-            self.assertTrue(corr in self.corr_regions,
-                            msg='{}'.format(corr))
+            found = False
+            if corr in self.corr_regions:
+                found=True
+            elif corr.counterpart() in self.corr_regions:
+                found=True
+
+            self.assertTrue(found, msg='{}'.format(corr))
 
     def test_low_level_in_big(self):
         """
         Test that the regions with lower levels are always contained
         within regions with higher levels. A sanity check.
         """
-        low_corr_regions = base.load_2d_regions(level=68)
+        low_corr_regions = read_region(level=68)
 
         for corr, large_region in self.corr_regions.items():
             self.assertTrue(low_corr_regions[corr].within(large_region))

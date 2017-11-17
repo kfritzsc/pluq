@@ -17,9 +17,15 @@ removal of misreferenced and misassigned data we have determined refined
 amino-acid type-assignment and/or secondary-structure information from 
 experimental NMR spectra.
 
+You can find related software and some examples on Klaus Schmidt-Rohr's and 
+Mei Hong's lab websites:
+
+- [ksrlab.org](ksrlab.org/pluqin-sqat/)
+- [meihonglab.mit.edu](meihonglab.mit.edu/software)
+
 ## Requirements
 
-- Python 3.5+ or Python 2.7+
+- Python 3.4+ or Python 2.7
 - GEOS
 - GDAL
 
@@ -55,7 +61,11 @@ for more information.
     python3 setup.py install
 ```
 
-If you would like to use `pluq` to run PACSY database queries you will need to have `MySQLdb` or `mysqlclient` installed. If you have installed Python 2.7+, you will need the package `MySQLdb`. If you have Python 3.5+ installed you will need to the package `mysqlclient`.
+If you would like to run `piqc` or use `pluq` to make PACSY database 
+queries, etc. you will also  need to have the python package  `MySQLdb` or 
+`mysqlclient` installed. If you have installed Python 2.7, you will need 
+`MySQLdb`. If you have Python 3.4+ installed you will need to the package 
+`mysqlclient`.
 
 ## References
 

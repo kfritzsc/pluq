@@ -54,7 +54,7 @@ class KnownAtomTraverse(unittest.TestCase):
     # If there is two "equivalent" ways just pick one.
     edge_case = (('F', 'CB', 'CZ'),
                  (('CB', 'CG', 'CD1', 'CE1', 'CZ'),
-                  ('CB', 'CG', 'CD1', 'CE1', 'CZ')))
+                  ('CB', 'CG', 'CD2', 'CE2', 'CZ')))
 
     def test_traverse_atoms_edge(self):
         """ Test that one of the correct path is found if both are okay.
