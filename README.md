@@ -20,8 +20,8 @@ experimental NMR spectra.
 You can find related software and some examples on Klaus Schmidt-Rohr's and 
 Mei Hong's lab websites:
 
-- [ksrlab.org](ksrlab.org/pluqin-sqat/)
-- [meihonglab.mit.edu](meihonglab.mit.edu/software)
+- [ksrlab.org](http://www.ksrlab.org/pluqin-sqat/)
+- [meihonglab.mit.edu](http://meihonglab.mit.edu/software)
 
 ## Requirements
 
