@@ -10,8 +10,11 @@ import sys
 
 import h5py
 import numpy as np
-from matplotlib import _cntr as cntr
+
+from skimage import measure
+
 from scipy.interpolate import interp1d, RectBivariateSpline
+
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 
@@ -189,7 +192,7 @@ def estimate_pdf(data, grid=None, bandwidth=None, params=None, **kwargs):
         score_grid = xgrid.reshape((-1, 1))
     else:
         xgrid, ygrid = grid
-        score_grid = np.array(zip(np.ravel(xgrid), np.ravel(ygrid)))
+        score_grid = np.array(list(zip(np.ravel(xgrid), np.ravel(ygrid))))
 
     log_pdf = kde.score_samples(score_grid).reshape(np.shape(xgrid))
 
@@ -427,15 +430,22 @@ def _region(smooth, level):
         raise ValueError('Should be a 2D data set.')
 
     xgrid, ygrid = smooth.grid
-    c = cntr.Cntr(xgrid, ygrid, smooth.pdf)
+    x = xgrid[0, :]
+    y = ygrid[:, 0]
 
+    fx = interp1d(range(len(x)), x)
+    fy = interp1d(range(len(y)), y)
 
-    vertex = c.trace(level)
-    vertex = vertex[:len(vertex)/2]
+    c_vertex = measure.find_contours(np.transpose(smooth.pdf), level)
 
     polygon = []
-    for vert in vertex:
-        polygon.append((vert, None))
+    for patch in c_vertex:
+
+        fi_patch = np.zeros((len(patch[:, 0]), 2))
+        fi_patch[:, 0] = fx(patch[:, 0])
+        fi_patch[:, 1] = fy(patch[:, 1])
+
+        polygon.append((fi_patch, None))
         return MultiPolygon(polygon)
 
 

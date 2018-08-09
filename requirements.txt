@@ -2,6 +2,7 @@ fiona
 h5py
 numpy
 scikit-learn
+scikit-image
 scipy
 shapely
 matplotlib

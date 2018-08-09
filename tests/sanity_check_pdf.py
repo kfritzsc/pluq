@@ -72,7 +72,7 @@ if __name__ == "__main__":
 
     corr = Correlation('A', ('CA', 'CB'), 'H')
 
-    pacsy = DBMySQL(db='pacsy2', password='pass')
+    pacsy = DBMySQL(db='pacsy_local', password='')
     pacsy_corr = PacsyCorrelation(corr, pacsy)
     data = pacsy_corr.get_cs(piqc=True, model='all',  sigma_n=3, like_ss=True)
     smooth = estimate_pdf(data,
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     x, y = smooth.grid
     z = smooth.pdf
-    plt.contour(x, y, z, list(smooth.get_levels(data, 68, 98, 95)))
+    plt.contour(x, y, z, sorted(list(smooth.get_levels(data, 68, 98, 95))))
 
     plt.figure(2)
 
