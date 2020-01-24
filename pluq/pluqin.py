@@ -12,8 +12,7 @@ import pluq.inbase as inbase
 from shapely.geometry import Point
 
 
-Assignment = namedtuple('Assignment', ['res', 'atoms', 'scores',
-    'ss_scores'], verbose=False)
+Assignment = namedtuple('Assignment', ['res', 'atoms', 'scores', 'ss_scores'])
 Assignment.__new__.__defaults__ = (None,) * len(Assignment._fields)
 
 
@@ -289,7 +288,7 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
 
     # Sort the assignment by the joint and then sum of probabilities
     order_scores = [columns[-4],
-                    list(np.sum(np.array(columns[n+1:n*2+1]),axis=0))]
+                    list(np.sum(np.array(columns[n+1:n*2+1]), axis=0))]
     ind = np.lexsort((order_scores[1], order_scores[0]))[::-1]
     rows = [list(zip(*columns))[x] for x in ind]
 
