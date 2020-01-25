@@ -365,7 +365,7 @@ def get_pdf(corr, pdf_dict):
     levels = np.array(pdf_dict[corr+',levs'])
 
     if len(x_params) == 3:
-        grid = np.linspace(*x_params)
+        grid = np.linspace(x_params[0], x_params[1], int(x_params[-1]))
     else:
         x_grid = np.linspace(x_params[0], x_params[1], int(x_params[-1]))
         y_grid = np.linspace(x_params[2], x_params[3], int(x_params[-2]))
