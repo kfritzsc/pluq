@@ -194,7 +194,7 @@ def main(resonance_set, experiment_name='c', seq=None, level=95,
         raise ValueError(mesg)
 
     # A little input validation.
-    if isinstance(resonance_set[0], collections.Iterable):
+    if isinstance(resonance_set[0], collections.abc.Iterable):
         peak_dims = len(resonance_set[0])
     else:
         peak_dims = 1

@@ -19,7 +19,7 @@ from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import GridSearchCV
 
 import fiona
-from shapely import speedups
+# from shapely import speedups
 from shapely.prepared import prep
 from shapely.ops import transform
 from shapely.geometry import MultiPolygon, Polygon, Point, mapping
@@ -29,8 +29,8 @@ from pluq.base import Correlation, ProteinSeq, CSExperiment
 
 
 # Use shapely speed-ups if they are available.
-if speedups.available:
-    speedups.enable()
+# if speedups.available:
+#     speedups.enable()
 
 
 # PDF class with methods for extracting parameters
